@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEAD SHOOT — Guild Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0a0a0d;
+    --panel:#15151a;
+    --panel-2:#1c1c22;
+    --line:#2a2a32;
+    --orange:#ff6a1a;
+    --orange-dim:#c8500f;
+    --red:#e4312b;
+    --white:#f2f2f0;
+    --muted:#8d8d97;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    background-image:
+      linear-gradient(180deg, rgba(228,49,43,0.05) 0%, transparent 40%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 60px);
+  }
+  h1,h2,h3,.display{font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:0.02em;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+
+  /* NAV */
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 32px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:rgba(10,10,13,0.92);backdrop-filter:blur(8px);z-index:50;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;letter-spacing:0.05em;}
+  .brand .bar{width:4px;height:22px;background:var(--orange);clip-path:polygon(30% 0,100% 0,70% 100%,0 100%);}
+  .navlinks{display:flex;gap:8px;align-items:center;}
+  .navlinks a, .navlinks button{
+    font-family:'Rajdhani',sans-serif;font-weight:600;font-size:15px;letter-spacing:0.04em;
+    text-transform:uppercase;color:var(--muted);padding:9px 16px;border:1px solid transparent;
+    background:none;cursor:pointer;border-radius:3px;transition:all .15s;
+  }
+  .navlinks a:hover, .navlinks button:hover{color:var(--white);border-color:var(--line);}
+  .navlinks .cta{color:var(--white);background:var(--panel-2);border-color:var(--line);}
+
+  /* LAYOUT */
+  .view{display:none;}
+  .view.active{display:block;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+
+  /* HERO */
+  .hero{padding:110px 24px 90px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{
+    content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
+    width:900px;height:900px;background:radial-gradient(circle, rgba(255,106,26,0.14) 0%, transparent 65%);
+    pointer-events:none;
+  }
+  .eyebrow{font-family:'Rajdhani',sans-serif;font-weight:600;color:var(--orange);letter-spacing:0.25em;font-size:13px;margin-bottom:18px;}
+  .hero h1{font-size:76px;line-height:0.95;font-weight:700;margin-bottom:6px;position:relative;}
+  .hero h1 span{color:var(--orange);}
+  .hero p{color:var(--muted);font-size:17px;max-width:520px;margin:22px auto 36px;line-height:1.6;}
+  .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+
+  .btn{
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.03em;
+    text-transform:uppercase;padding:14px 30px;border:none;cursor:pointer;
+    clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+    transition:transform .15s, box-shadow .15s;display:inline-block;
+  }
+  .btn-primary{background:var(--orange);color:#0a0a0a;box-shadow:0 0 0 rgba(255,106,26,0);}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,106,26,0.35);}
+  .btn-ghost{background:transparent;color:var(--white);border:1px solid var(--line);clip-path:none;border-radius:3px;}
+  .btn-ghost:hover{border-color:var(--orange);color:var(--orange);}
+  .btn-danger{background:var(--red);color:var(--white);}
+  .btn-block{width:100%;}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none !important;box-shadow:none !important;}
+
+  /* STATS STRIP */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .stat{padding:28px 20px;text-align:center;border-right:1px solid var(--line);}
+  .stat:last-child{border-right:none;}
+  .stat .num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:36px;color:var(--orange);}
+  .stat .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:0.12em;margin-top:4px;}
+
+  /* SECTION */
+  .section{padding:80px 24px;}
+  .section-head{margin-bottom:40px;}
+  .section-head .eyebrow{margin-bottom:8px;}
+  .section-head h2{font-size:34px;}
+
+  .roles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .role-card{
+    background:var(--panel);border:1px solid var(--line);padding:26px 20px;
+    clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+    transition:border-color .15s;
+  }
+  .role-card:hover{border-color:var(--orange-dim);}
+  .role-card .tag{color:var(--orange);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;display:block;}
+  .role-card h3{font-size:20px;margin-bottom:10px;}
+  .role-card p{color:var(--muted);font-size:14px;line-height:1.55;}
+
+  /* FORM PANELS */
+  .center-panel{display:flex;align-items:center;justify-content:center;min-height:78vh;padding:40px 20px;}
+  .panel{
+    width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);
+    padding:36px 32px;clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
+  }
+  .panel h2{font-size:26px;margin-bottom:6px;}
+  .panel .sub{color:var(--muted);font-size:14px;margin-bottom:26px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%;background:var(--bg);border:1px solid var(--line);color:var(--white);
+    padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;border-radius:3px;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:var(--orange);}
+  .field textarea{resize:vertical;min-height:80px;}
+  .msg{padding:11px 14px;border-radius:3px;font-size:13px;margin-bottom:16px;display:none;}
+  .msg.show{display:block;}
+  .msg.error{background:rgba(228,49,43,0.12);border:1px solid rgba(228,49,43,0.4);color:#ff8f8b;}
+  .msg.ok{background:rgba(255,106,26,0.1);border:1px solid rgba(255,106,26,0.4);color:#ffb17a;}
+  .switch-link{text-align:center;margin-top:18px;font-size:13px;color:var(--muted);}
+  .switch-link a{color:var(--orange);font-weight:600;}
+
+  /* DASHBOARD */
+  .dash-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;flex-wrap:wrap;gap:16px;}
+  .dash-head h2{font-size:32px;}
+  .dash-head .sub{color:var(--muted);font-size:14px;margin-top:4px;}
+  .dash-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;}
+  .card{
+    background:var(--panel);border:1px solid var(--line);padding:24px;
+    clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+  }
+  .card h3{font-family:'Rajdhani',sans-serif;font-size:14px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;}
+  .profile-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;}
+  .profile-row:last-child{border-bottom:none;}
+  .profile-row .k{color:var(--muted);}
+  .profile-row .v{font-family:'JetBrains Mono',monospace;font-weight:500;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:2px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;}
+  .badge.member{background:rgba(141,141,151,0.2);color:var(--muted);}
+  .badge.officer{background:rgba(255,106,26,0.18);color:var(--orange);}
+  .badge.admin{background:rgba(228,49,43,0.18);color:#ff6b66;}
+  .empty{color:var(--muted);font-size:13px;padding:20px 0;text-align:center;}
+
+  footer{border-top:1px solid var(--line);padding:28px 24px;text-align:center;color:var(--muted);font-size:12px;}
+
+  @media (max-width:760px){
+    .hero h1{font-size:44px;}
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .stat:nth-child(2){border-right:none;}
+    .roles{grid-template-columns:1fr 1fr;}
+    .dash-grid{grid-template-columns:1fr;}
+    .navlinks{gap:2px;}
+    .navlinks a, .navlinks button{padding:8px 10px;font-size:13px;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand"><span class="bar"></span>DEAD SHOOT</div>
+  <div class="navlinks" id="navlinks"></div>
+</nav>
+
+<!-- LANDING -->
+<section class="view" id="view-landing">
+  <div class="hero">
+    <div class="eyebrow">Free Fire Guild</div>
+    <h1>DEAD<span>SHOOT</span><br>COMMAND CENTER</h1>
+    <p>The official headquarters for the DEAD SHOOT guild. Roster, events, attendance, and rank — all in one place, built for squad.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#apply">Apply To Join</a>
+      <a class="btn btn-ghost" href="#login">Member Login</a>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="num" id="stat-members">—</div><div class="lbl">Members</div></div>
+    <div class="stat"><div class="num" id="stat-events">—</div><div class="lbl">Events Logged</div></div>
+    <div class="stat"><div class="num">4</div><div class="lbl">Rank Tiers</div></div>
+    <div class="stat"><div class="num">24/7</div><div class="lbl">Command Access</div></div>
+  </div>
+  <div class="section wrap">
+    <div class="section-head">
+      <div class="eyebrow">How access works</div>
+      <h2>Built for real squads, not open signups</h2>
+    </div>
+    <div class="roles">
+      <div class="role-card"><span class="tag">01 · Visitor</span><h3>Apply</h3><p>Submit your Free Fire UID and a bit about yourself. No account needed to apply.</p></div>
+      <div class="role-card"><span class="tag">02 · Member</span><h3>Activate</h3><p>Approved applicants get a one-time activation key to register their account.</p></div>
+      <div class="role-card"><span class="tag">03 · Officer</span><h3>Manage</h3><p>Officers run events, approve attendance, and keep the roster sharp.</p></div>
+      <div class="role-card"><span class="tag">04 · Admin</span><h3>Command</h3><p>Full control over members, ranks, applications, and guild settings.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLY -->
+<section class="view" id="view-apply">
+  <div class="center-panel">
+    <div class="panel">
+      <h2>Apply to Join</h2>
+      <div class="sub">Tell us about yourself. Officers review every application.</div>
+      <div class="msg" id="apply-msg"></div>
+      <form id="apply-form">
+        <div class="field"><label>In-game name</label><input type="text" id="apply-name" required></div>
+        <div class="field"><label>Free Fire UID</label><input type="text" id="apply-uid" required></div>
+        <div class="field"><label>Device</label><input type="text" id="apply-device" placeholder="e.g. iPhone 13, Redmi Note 12"></div>
+        <div class="field"><label>Region</label><input type="text" id="apply-region" placeholder="e.g. Nigeria / MEA"></div>
+        <div class="field"><label>Experience</label><textarea id="apply-exp" placeholder="Previous guilds, rank, playstyle..."></textarea></div>
+        <button class="btn btn-primary btn-block" type="submit">Submit Application</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ACTIVATE -->
+<section class="view" id="view-activate">
+  <div class="center-panel">
+    <div class="panel">
+      <h2>Activate Account</h2>
+      <div class="sub">Enter the one-time activation key given to you by an officer.</div>
+      <div class="msg" id="activate-msg"></div>
+      <form id="key-form">
+        <div class="field"><label>Activation Key</label><input type="text" id="activate-key" class="mono" placeholder="XXXXXXXXXX" required></div>
+        <button class="btn btn-primary btn-block" type="submit">Verify Key</button>
+      </form>
+      <form id="register-form" style="display:none;margin-top:6px;">
+        <div class="field"><label>Username</label><input type="text" id="reg-username" required></div>
+        <div class="field"><label>Email</label><input type="email" id="reg-email" required></div>
+        <div class="field"><label>Password</label><input type="password" id="reg-password" required minlength="6"></div>
+        <button class="btn btn-primary btn-block" type="submit">Create Account</button>
+      </form>
+      <div class="switch-link">Already registered? <a href="#login">Log in</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGIN -->
+<section class="view" id="view-login">
+  <div class="center-panel">
+    <div class="panel">
+      <h2>Member Login</h2>
+      <div class="sub">Access your guild dashboard.</div>
+      <div class="msg" id="login-msg"></div>
+      <form id="login-form">
+        <div class="field"><label>Email</label><input type="email" id="login-email" required></div>
+        <div class="field"><label>Password</label><input type="password" id="login-password" required></div>
+        <button class="btn btn-primary btn-block" type="submit">Log In</button>
+      </form>
+      <div class="switch-link">Have an activation key? <a href="#activate">Activate account</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="view" id="view-dashboard">
+  <div class="section wrap">
+    <div class="dash-head">
+      <div>
+        <h2>Welcome back<span id="dash-username">.</span></h2>
+        <div class="sub">Your guild status at a glance.</div>
+      </div>
+      <button class="btn btn-danger" id="logout-btn">Log Out</button>
+    </div>
+    <div class="dash-grid">
+      <div class="card">
+        <h3>Member Profile</h3>
+        <div id="profile-rows"></div>
+      </div>
+      <div class="card">
+        <h3>Recent Announcements</h3>
+        <div id="announcements-list"><div class="empty">No announcements yet.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>DEAD SHOOT Guild Command Center — Free Fire</footer>
+
+<script>
+const SUPABASE_URL = 'https://lipblkisjfbgysgteseh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpcGJsa2lzamZiZ3lzZ3Rlc2VoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM2MjEsImV4cCI6MjA5OTEwOTYyMX0.V16tP9fJojhZ4gD6_QeCDCR09T4Ng5hlZS5Luq16-uw';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let currentSession = null;
+let currentProfile = null;
+
+const views = ['landing','apply','activate','login','dashboard'];
+function showView(name){
+  views.forEach(v => document.getElementById('view-'+v).classList.toggle('active', v === name));
+  window.scrollTo(0,0);
+}
+
+function renderNav(){
+  const nav = document.getElementById('navlinks');
+  if(currentSession){
+    nav.innerHTML = `<a href="#dashboard">Dashboard</a><button id="nav-logout">Log Out</button>`;
+    document.getElementById('nav-logout').onclick = doLogout;
+  } else {
+    nav.innerHTML = `<a href="#apply">Apply</a><a href="#activate">Activate</a><a class="cta" href="#login">Login</a>`;
+  }
+}
+
+async function route(){
+  const hash = (location.hash || '#landing').replace('#','');
+  if(hash === 'dashboard'){
+    if(!currentSession){ location.hash = '#login'; return; }
+    await loadDashboard();
+    showView('dashboard');
+    return;
+  }
+  showView(views.includes(hash) ? hash : 'landing');
+}
+window.addEventListener('hashchange', route);
+
+// ---- APPLY ----
+document.getElementById('apply-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('apply-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  const { error } = await sb.from('applications').insert({
+    applicant_name: document.getElementById('apply-name').value.trim(),
+    ff_uid: document.getElementById('apply-uid').value.trim(),
+    device: document.getElementById('apply-device').value.trim(),
+    region: document.getElementById('apply-region').value.trim(),
+    experience: document.getElementById('apply-exp').value.trim()
+  });
+  if(error){
+    msg.classList.add('show','error'); msg.textContent = 'Something went wrong: ' + error.message;
+  } else {
+    msg.classList.add('show','ok'); msg.textContent = 'Application submitted! An officer will review it and issue you an activation key.';
+    e.target.reset();
+  }
+});
+
+// ---- ACTIVATE: STEP 1 verify key ----
+let verifiedKey = null;
+document.getElementById('key-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('activate-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  const key = document.getElementById('activate-key').value.trim();
+  const { data, error } = await sb.rpc('check_activation_key', { key_input: key });
+  if(error || !data){
+    msg.classList.add('show','error'); msg.textContent = 'Invalid or expired activation key.';
+    return;
+  }
+  verifiedKey = key;
+  msg.classList.add('show','ok'); msg.textContent = 'Key verified. Create your account below.';
+  document.getElementById('key-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'block';
+});
+
+// ---- ACTIVATE: STEP 2 register ----
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('activate-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  const username = document.getElementById('reg-username').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+
+  const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password });
+  if(signUpError){
+    msg.classList.add('show','error'); msg.textContent = signUpError.message;
+    return;
+  }
+  const userId = signUpData.user?.id;
+  if(!userId){
+    msg.classList.add('show','error'); msg.textContent = 'Account created but no session returned. Try logging in.';
+    return;
+  }
+  const { data: consumed, error: consumeError } = await sb.rpc('consume_activation_key', {
+    key_input: verifiedKey, new_user_id: userId, new_username: username
+  });
+  if(consumeError || !consumed){
+    msg.classList.add('show','error'); msg.textContent = 'Account created, but activation failed. Contact an officer.';
+    return;
+  }
+  msg.classList.add('show','ok'); msg.textContent = 'Account activated! Redirecting to your dashboard...';
+  currentSession = signUpData.session;
+  setTimeout(() => { location.hash = '#dashboard'; }, 1200);
+});
+
+// ---- LOGIN ----
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('login-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if(error){
+    msg.classList.add('show','error'); msg.textContent = 'Login failed: ' + error.message;
+    return;
+  }
+  currentSession = data.session;
+  renderNav();
+  location.hash = '#dashboard';
+});
+
+// ---- LOGOUT ----
+async function doLogout(){
+  await sb.auth.signOut();
+  currentSession = null;
+  currentProfile = null;
+  renderNav();
+  location.hash = '#landing';
+}
+document.getElementById('logout-btn').addEventListener('click', doLogout);
+
+// ---- DASHBOARD ----
+async function loadDashboard(){
+  const { data: { user } } = await sb.auth.getUser();
+  if(!user) return;
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  currentProfile = profile;
+  document.getElementById('dash-username').textContent = profile ? `, ${profile.username}` : '';
+  const rows = document.getElementById('profile-rows');
+  if(profile){
+    const badgeClass = profile.role === 'admin' ? 'admin' : (profile.role === 'officer' ? 'officer' : 'member');
+    rows.innerHTML = `
+      <div class="profile-row"><span class="k">Member ID</span><span class="v">${profile.member_id}</span></div>
+      <div class="profile-row"><span class="k">Username</span><span class="v">${profile.username}</span></div>
+      <div class="profile-row"><span class="k">Rank</span><span class="v">${profile.rank}</span></div>
+      <div class="profile-row"><span class="k">Role</span><span class="badge ${badgeClass}">${profile.role}</span></div>
+      <div class="profile-row"><span class="k">Status</span><span class="v">${profile.status}</span></div>
+      <div class="profile-row"><span class="k">Joined</span><span class="v">${profile.join_date}</span></div>
+    `;
+  } else {
+    rows.innerHTML = `<div class="empty">Profile not found.</div>`;
+  }
+
+  const { data: announcements } = await sb.from('announcements').select('*').order('created_at', { ascending:false }).limit(5);
+  const list = document.getElementById('announcements-list');
+  if(announcements && announcements.length){
+    list.innerHTML = announcements.map(a => `
+      <div class="profile-row" style="display:block;">
+        <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;">${a.title}</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:3px;">${a.content}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// ---- LANDING STATS ----
+async function loadStats(){
+  const { count: memberCount } = await sb.from('profiles').select('*', { count:'exact', head:true });
+  const { count: eventCount } = await sb.from('events').select('*', { count:'exact', head:true });
+  if(memberCount !== null) document.getElementById('stat-members').textContent = memberCount;
+  if(eventCount !== null) document.getElementById('stat-events').textContent = eventCount;
+}
+
+// ---- INIT ----
+(async function init(){
+  const { data: { session } } = await sb.auth.getSession();
+  currentSession = session;
+  renderNav();
+  loadStats();
+  route();
+})();
+</script>
+</body>
+</html>
