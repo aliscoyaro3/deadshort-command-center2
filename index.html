@@ -1,1827 +1,962 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>DEADSHOT Guild</title>
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* ----- RESET & BASE ----- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background: #0b0808;
-            color: #e0d6c8;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeadShot Guild — Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#08070a;
+    --panel:#15111a;
+    --panel-2:#1c1620;
+    --line:#3a1f24;
+    --gold:#f0a93a;
+    --gold-dim:#c1811f;
+    --red:#a11d1d;
+    --red-bright:#e0322a;
+    --white:#f2ede0;
+    --muted:#948a86;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    min-height:100vh;
+    background-image:
+      linear-gradient(180deg, rgba(224,50,42,0.05) 0%, transparent 40%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 60px);
+    font-family:'Inter',sans-serif;
+  }
+  h1,h2,h3,.display{font-family:'Teko',sans-serif;text-transform:uppercase;letter-spacing:0.01em;font-weight:600;}
+  .hud{font-family:'Orbitron',sans-serif;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
 
-        /* ----- SCROLLBAR (Free Fire style) ----- */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1a1210;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #c0392b;
-            border-radius: 10px;
-        }
+  /* NAV */
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 32px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:rgba(10,10,13,0.92);backdrop-filter:blur(8px);z-index:50;
+  }
+  .brand{display:flex;align-items:center;gap:9px;font-family:'Orbitron',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.02em;}
+  .brand-logo{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(224,50,42,0.6));}
+  .brand-text{
+    background:linear-gradient(135deg,var(--gold) 30%,var(--red-bright) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 18px rgba(240,169,58,0.25);
+  }
+  .navlinks{display:flex;gap:8px;align-items:center;}
+  .navlinks a, .navlinks button{
+    font-family:'Orbitron',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.03em;
+    text-transform:uppercase;color:var(--muted);padding:9px 16px;border:1px solid transparent;
+    background:none;cursor:pointer;border-radius:3px;transition:all .15s;
+  }
+  .navlinks a:hover, .navlinks button:hover{color:var(--white);border-color:var(--line);}
+  .navlinks .cta{color:var(--white);background:var(--panel-2);border-color:var(--line);}
 
-        /* ----- TOAST CONTAINER (top-right) ----- */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            pointer-events: none;
-            max-width: 380px;
-            width: 100%;
-        }
-        .toast {
-            pointer-events: auto;
-            padding: 14px 20px;
-            border-radius: 8px;
-            background: #1e1412;
-            border-left: 5px solid #c0392b;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
-            color: #f0e6dc;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transform: translateX(110%);
-            animation: slideInToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(192, 57, 43, 0.3);
-        }
-        .toast.hide {
-            animation: slideOutToast 0.3s ease-in forwards;
-        }
-        .toast.success {
-            border-left-color: #2ecc71;
-        }
-        .toast.error {
-            border-left-color: #e74c3c;
-        }
-        .toast.warning {
-            border-left-color: #f1c40f;
-        }
-        .toast-icon {
-            font-size: 1.4rem;
-            line-height: 1;
-        }
-        @keyframes slideInToast {
-            0% {
-                transform: translateX(110%);
-                opacity: 0;
-            }
-            100% {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        @keyframes slideOutToast {
-            0% {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(110%);
-                opacity: 0;
-            }
-        }
+  /* LAYOUT */
+  .view{display:none;}
+  .view.active{display:block;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
 
-        /* ----- NAVIGATION ----- */
-        nav {
-            background: #0f0a09;
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid #c0392b;
-            flex-wrap: wrap;
-            gap: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(8px);
-        }
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .nav-left img {
-            height: 40px;
-            width: auto;
-            border-radius: 6px;
-            border: 1px solid #c0392b;
-        }
-        .brand {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: 2px;
-            background: linear-gradient(135deg, #f1c40f, #e67e22, #c0392b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 30px rgba(192, 57, 43, 0.3);
-        }
-        .nav-links {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .nav-links a {
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #b0a89c;
-            transition: 0.2s;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-        }
-        .nav-links a:hover,
-        .nav-links a.active {
-            background: #c0392b;
-            color: #fff;
-        }
-        .nav-links .logout-btn {
-            background: #2c1a18;
-            color: #e74c3c;
-            border: 1px solid #e74c3c;
-        }
-        .nav-links .logout-btn:hover {
-            background: #e74c3c;
-            color: #fff;
-        }
+  /* HERO */
+  .hero{padding:110px 24px 90px;text-align:center;position:relative;overflow:hidden;}
+  .hero::before{
+    content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
+    width:900px;height:900px;background:radial-gradient(circle, rgba(224,50,42,0.22) 0%, rgba(240,169,58,0.08) 40%, transparent 65%);
+    pointer-events:none;
+  }
+  .eyebrow{font-family:'Orbitron',sans-serif;font-weight:600;color:var(--gold);letter-spacing:0.2em;font-size:11px;margin-bottom:18px;}
+  .hero h1{font-size:76px;line-height:0.95;font-weight:700;margin-bottom:6px;position:relative;}
+  .hero h1 .grad-text{
+    background:linear-gradient(135deg,var(--gold) 20%,var(--red-bright) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 24px rgba(224,50,42,0.35));
+  }
+  .hero p{color:var(--muted);font-size:17px;max-width:520px;margin:22px auto 36px;line-height:1.6;}
+  .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
 
-        /* ----- MAIN CONTAINER ----- */
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 24px 20px 60px;
-            flex: 1;
-            width: 100%;
-        }
+  .btn{
+    font-family:'Orbitron',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.02em;
+    text-transform:uppercase;padding:14px 30px;border:none;cursor:pointer;
+    clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+    transition:transform .15s, box-shadow .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#0a0705;box-shadow:0 0 0 rgba(224,50,42,0);}
+  .btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(224,50,42,0.45),0 0 20px rgba(240,169,58,0.25);}
+  .btn-ghost{background:transparent;color:var(--white);border:1px solid var(--line);clip-path:none;border-radius:3px;}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-danger{background:var(--red-bright);color:var(--white);}
+  .btn-block{width:100%;}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none !important;box-shadow:none !important;}
 
-        /* ----- PAGES (view system) ----- */
-        .page {
-            display: none;
-            animation: fadePage 0.25s ease;
-        }
-        .page.active {
-            display: block;
-        }
-        @keyframes fadePage {
-            0% {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+  /* Button spinner */
+  .btn .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
+  .btn.loading .spinner{display:inline-block;}
+  .btn.loading .btn-text{opacity:0.7;}
+  @keyframes spin{to{transform:rotate(360deg)}}
 
-        /* ----- CARDS & TYPOGRAPHY ----- */
-        .card {
-            background: #15100e;
-            border-radius: 12px;
-            padding: 24px;
-            border: 1px solid #2a1e1a;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-        }
-        .card h2 {
-            font-size: 1.5rem;
-            margin-bottom: 16px;
-            color: #f1c40f;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #c0392b;
-            padding-bottom: 10px;
-        }
-        .card h3 {
-            color: #e67e22;
-            margin: 16px 0 8px;
-        }
-        .glow-text {
-            color: #f1c40f;
-            text-shadow: 0 0 20px rgba(241, 196, 15, 0.15);
-        }
-        .text-muted {
-            color: #8a7e72;
-            font-size: 0.9rem;
-        }
-        .badge {
-            display: inline-block;
-            background: #c0392b;
-            color: #fff;
-            padding: 2px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        .badge.admin {
-            background: #f1c40f;
-            color: #1a1210;
-        }
-        .badge.officer {
-            background: #e67e22;
-            color: #1a1210;
-        }
-        .badge.member {
-            background: #2c3e50;
-            color: #ecf0f1;
-        }
+  /* STATS STRIP */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .stat{padding:28px 20px;text-align:center;border-right:1px solid var(--line);}
+  .stat:last-child{border-right:none;}
+  .stat .num{font-family:'Orbitron',sans-serif;font-weight:700;font-size:30px;color:var(--gold);}
+  .stat .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:0.12em;margin-top:4px;}
 
-        /* ----- FORMS ----- */
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-        .form-row {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .form-row label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #b0a89c;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        input,
-        select,
-        textarea {
-            background: #1f1815;
-            border: 1px solid #332520;
-            border-radius: 8px;
-            padding: 12px 14px;
-            color: #f0e6dc;
-            font-size: 1rem;
-            transition: 0.2s;
-            width: 100%;
-        }
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #c0392b;
-            box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.25);
-        }
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
+  /* SECTION */
+  .section{padding:80px 24px;}
+  .section-head{margin-bottom:40px;}
+  .section-head .eyebrow{margin-bottom:8px;}
+  .section-head h2{font-size:34px;}
 
-        /* ----- BUTTONS (with loading state) ----- */
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: #fff;
-            cursor: pointer;
-            transition: 0.2s;
-            background: #c0392b;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            min-width: 120px;
-            position: relative;
-        }
-        .btn:hover:not(:disabled) {
-            background: #a93226;
-            transform: scale(0.98);
-        }
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .btn .spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-        .btn.loading .spinner {
-            display: inline-block;
-        }
-        .btn.loading .btn-text {
-            opacity: 0.7;
-        }
-        .btn-gold {
-            background: #f1c40f;
-            color: #1a1210;
-        }
-        .btn-gold:hover:not(:disabled) {
-            background: #d4ac0e;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #c0392b;
-            color: #c0392b;
-        }
-        .btn-outline:hover:not(:disabled) {
-            background: #c0392b;
-            color: #fff;
-        }
-        .btn-sm {
-            padding: 6px 16px;
-            font-size: 0.8rem;
-            min-width: auto;
-        }
-        .btn-success {
-            background: #27ae60;
-        }
-        .btn-success:hover:not(:disabled) {
-            background: #1e8449;
-        }
-        .btn-danger {
-            background: #e74c3c;
-        }
-        .btn-danger:hover:not(:disabled) {
-            background: #c0392b;
-        }
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+  .roles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .role-card{
+    background:var(--panel);border:1px solid var(--line);padding:26px 20px;
+    clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+    transition:border-color .15s;
+  }
+  .role-card:hover{border-color:var(--gold-dim);}
+  .role-card .tag{color:var(--gold);font-family:'Orbitron',sans-serif;font-weight:700;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;display:block;}
+  .role-card h3{font-size:20px;margin-bottom:10px;}
+  .role-card p{color:var(--muted);font-size:14px;line-height:1.55;}
 
-        /* ----- TABLES (HQ) ----- */
-        .table-wrap {
-            overflow-x: auto;
-            margin-top: 12px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        th,
-        td {
-            padding: 10px 12px;
-            text-align: left;
-            border-bottom: 1px solid #221a16;
-        }
-        th {
-            color: #f1c40f;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            letter-spacing: 0.5px;
-            background: #100c0a;
-        }
-        tr:hover td {
-            background: #1c1411;
-        }
+  /* FORM PANELS */
+  .center-panel{display:flex;align-items:center;justify-content:center;min-height:78vh;padding:40px 20px;}
+  .panel{
+    width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);
+    padding:36px 32px;clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
+  }
+  .panel h2{font-size:26px;margin-bottom:6px;}
+  .panel .sub{color:var(--muted);font-size:14px;margin-bottom:26px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-family:'Orbitron',sans-serif;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%;background:var(--bg);border:1px solid var(--line);color:var(--white);
+    padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;border-radius:3px;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:var(--gold);}
+  .field textarea{resize:vertical;min-height:80px;}
+  .msg{padding:11px 14px;border-radius:3px;font-size:13px;margin-bottom:16px;display:none;}
+  .msg.show{display:block;}
+  .msg.error{background:rgba(224,50,42,0.12);border:1px solid rgba(224,50,42,0.4);color:#ff8f8b;}
+  .msg.ok{background:rgba(240,169,58,0.1);border:1px solid rgba(240,169,58,0.4);color:#f5c887;}
+  .switch-link{text-align:center;margin-top:18px;font-size:13px;color:var(--muted);}
+  .switch-link a{color:var(--gold);font-weight:600;}
 
-        /* ----- TABS (HQ) ----- */
-        .tabs {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
-            border-bottom: 2px solid #221a16;
-            padding-bottom: 4px;
-        }
-        .tab-btn {
-            background: transparent;
-            border: none;
-            padding: 10px 20px;
-            color: #8a7e72;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            border-radius: 8px 8px 0 0;
-            transition: 0.2s;
-            border-bottom: 3px solid transparent;
-        }
-        .tab-btn:hover {
-            color: #f0e6dc;
-            background: #1c1411;
-        }
-        .tab-btn.active {
-            color: #f1c40f;
-            border-bottom-color: #c0392b;
-            background: #15100e;
-        }
-        .tab-content {
-            display: none;
-            animation: fadePage 0.2s ease;
-        }
-        .tab-content.active {
-            display: block;
-        }
+  /* DASHBOARD */
+  .dash-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;flex-wrap:wrap;gap:16px;}
+  .dash-head h2{font-size:32px;}
+  .dash-head .sub{color:var(--muted);font-size:14px;margin-top:4px;}
+  .dash-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;}
+  .card{
+    background:var(--panel);border:1px solid var(--line);padding:24px;
+    clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+  }
+  .card h3{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;}
+  .profile-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;}
+  .profile-row:last-child{border-bottom:none;}
+  .profile-row .k{color:var(--muted);}
+  .profile-row .v{font-family:'JetBrains Mono',monospace;font-weight:500;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:2px;font-family:'Orbitron',sans-serif;font-weight:700;font-size:9px;letter-spacing:0.05em;text-transform:uppercase;}
+  .badge.member{background:rgba(141,141,151,0.2);color:var(--muted);}
+  .badge.officer{background:rgba(240,169,58,0.18);color:var(--gold);}
+  .badge.admin{background:rgba(224,50,42,0.18);color:#ff6b66;}
+  .empty{color:var(--muted);font-size:13px;padding:20px 0;text-align:center;}
 
-        /* ----- ROSTER GRID ----- */
-        .roster-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 16px;
-            margin-top: 16px;
-        }
-        .roster-card {
-            background: #1a1210;
-            border-radius: 10px;
-            padding: 16px;
-            border: 1px solid #2a1e1a;
-            text-align: center;
-            transition: 0.2s;
-        }
-        .roster-card:hover {
-            border-color: #c0392b;
-            transform: translateY(-3px);
-        }
-        .roster-card .avatar {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: #2c1a18;
-            margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            border: 2px solid #c0392b;
-            overflow: hidden;
-        }
-        .roster-card .avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .roster-card .name {
-            font-weight: 700;
-            font-size: 1rem;
-        }
-        .roster-card .rank {
-            font-size: 0.8rem;
-            color: #f1c40f;
-        }
+  /* HQ PORTAL */
+  .hq-tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:26px;padding-bottom:2px;}
+  .hq-tab{
+    font-family:'Orbitron',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.04em;text-transform:uppercase;
+    background:none;border:none;color:var(--muted);padding:11px 16px;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  .hq-tab:hover{color:var(--white);}
+  .hq-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+  .hq-panel{display:none;}
+  .hq-panel.active{display:block;}
+  .list-card{
+    background:var(--panel);border:1px solid var(--line);padding:18px 20px;margin-bottom:12px;
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+    display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;
+  }
+  .list-card .info{flex:1;min-width:200px;}
+  .list-card .info h4{font-family:'Teko',sans-serif;font-size:20px;text-transform:uppercase;margin-bottom:4px;}
+  .list-card .info p{color:var(--muted);font-size:13px;line-height:1.5;}
+  .list-card .actions{display:flex;gap:8px;flex-shrink:0;}
+  .btn-sm{padding:8px 16px;font-size:12px;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);display:inline-flex;align-items:center;gap:6px;}
+  .btn-approve{background:var(--gold);color:#0a0705;}
+  .btn-reject{background:transparent;border:1px solid var(--red-bright);color:var(--red-bright);}
+  .table-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);}
+  .hq-table{width:100%;border-collapse:collapse;font-size:14px;}
+  .hq-table th{
+    font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);
+    text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);
+  }
+  .hq-table td{padding:11px 16px;border-bottom:1px solid var(--line);}
+  .hq-table select{background:var(--bg);color:var(--white);border:1px solid var(--line);padding:5px 8px;border-radius:3px;font-size:13px;}
+  .key-chip{font-family:'JetBrains Mono',monospace;background:var(--panel-2);border:1px solid var(--line);padding:4px 10px;border-radius:3px;letter-spacing:0.05em;}
 
-        /* ----- SKELETON LOADER ----- */
-        .skeleton {
-            background: #1f1815;
-            border-radius: 8px;
-            height: 80px;
-            width: 100%;
-            animation: pulseSkeleton 1.2s ease-in-out infinite;
-            border: 1px solid #2a1e1a;
-        }
-        .skeleton-text {
-            height: 14px;
-            background: #2a1e1a;
-            border-radius: 4px;
-            margin: 6px 0;
-            animation: pulseSkeleton 1.2s ease-in-out infinite;
-        }
-        @keyframes pulseSkeleton {
-            0%,
-            100% {
-                opacity: 0.4;
-            }
-            50% {
-                opacity: 0.8;
-            }
-        }
+  footer{border-top:1px solid var(--line);padding:28px 24px;text-align:center;color:var(--muted);font-size:12px;}
 
-        /* ----- RESPONSIVE ----- */
-        @media (max-width: 640px) {
-            nav {
-                padding: 10px 16px;
-            }
-            .nav-left .brand {
-                font-size: 1.1rem;
-            }
-            .nav-left img {
-                height: 32px;
-            }
-            .nav-links a {
-                padding: 4px 10px;
-                font-size: 0.75rem;
-            }
-            .container {
-                padding: 16px 12px 40px;
-            }
-            .card {
-                padding: 16px;
-            }
-            .roster-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-            .tabs {
-                gap: 2px;
-            }
-            .tab-btn {
-                padding: 8px 12px;
-                font-size: 0.75rem;
-            }
-        }
+  /* ---- TOAST NOTIFICATIONS (added, does not affect layout) ---- */
+  #toast-container{
+    position:fixed;top:20px;right:20px;z-index:9999;
+    display:flex;flex-direction:column;gap:12px;max-width:380px;width:100%;pointer-events:none;
+  }
+  .toast{
+    pointer-events:auto;padding:14px 20px;border-radius:6px;background:var(--panel-2);
+    border-left:4px solid var(--gold);box-shadow:0 8px 24px rgba(0,0,0,0.7);
+    color:var(--white);font-size:0.9rem;font-weight:500;
+    transform:translateX(110%);animation:slideIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+    display:flex;align-items:center;gap:10px;border:1px solid var(--line);
+    backdrop-filter:blur(4px);
+  }
+  .toast.hide{animation:slideOut 0.3s ease-in forwards;}
+  .toast.success{border-left-color:#2ecc71;}
+  .toast.error{border-left-color:#e74c3c;}
+  .toast.warning{border-left-color:#f1c40f;}
+  .toast-icon{font-size:1.3rem;line-height:1;}
+  @keyframes slideIn{0%{transform:translateX(110%);opacity:0;}100%{transform:translateX(0);opacity:1;}}
+  @keyframes slideOut{0%{transform:translateX(0);opacity:1;}100%{transform:translateX(110%);opacity:0;}}
 
-        /* ----- UTILITY ----- */
-        .mt-8 {
-            margin-top: 8px;
-        }
-        .mt-16 {
-            margin-top: 16px;
-        }
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .gap-8 {
-            gap: 8px;
-        }
-        .text-center {
-            text-align: center;
-        }
-        .text-red {
-            color: #e74c3c;
-        }
-        .text-green {
-            color: #2ecc71;
-        }
-        .text-gold {
-            color: #f1c40f;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .w-full {
-            width: 100%;
-        }
-    </style>
+  @media (max-width:760px){
+    .hero h1{font-size:44px;}
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .stat:nth-child(2){border-right:none;}
+    .roles{grid-template-columns:1fr 1fr;}
+    .dash-grid{grid-template-columns:1fr;}
+    .navlinks{gap:2px;}
+    .navlinks a, .navlinks button{padding:8px 10px;font-size:13px;}
+  }
+</style>
 </head>
 <body>
 
-    <!-- ===== TOAST CONTAINER ===== -->
-    <div id="toast-container"></div>
+<!-- Toast container -->
+<div id="toast-container"></div>
 
-    <!-- ===== NAVIGATION ===== -->
-    <nav id="mainNav">
-        <div class="nav-left">
-            <img src="logo.png" alt="Deadshot Logo" onerror="this.style.display='none'" />
-            <span class="brand">DEADSHOT</span>
-        </div>
-        <div class="nav-links" id="navLinks">
-            <!-- Filled by JS based on auth state -->
-        </div>
-    </nav>
+<nav>
+  <div class="brand">
+    <img src="logo.png" alt="DEADSHOT" class="brand-logo" onerror="this.style.display='none'">
+    <span class="brand-text">D&#7431;&#7429;dS&#688;&oslash;&#7451;&#9889;</span>
+  </div>
+  <div class="navlinks" id="navlinks"></div>
+</nav>
 
-    <!-- ===== MAIN CONTENT ===== -->
-    <div class="container" id="app">
+<!-- LANDING -->
+<section class="view" id="view-landing">
+  <div class="hero">
+    <div class="eyebrow">Free Fire Guild</div>
+    <h1><span class="grad-text">D&#7431;&#7429;dS&#688;&oslash;&#7451;&#9889;</span> GUILD<br>COMMAND CENTER</h1>
+    <p>The official headquarters for DeadShot Guild. Roster, events, attendance, and rank — all in one place, built for squad.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#apply">Apply To Join</a>
+      <a class="btn btn-ghost" href="#login">Member Login</a>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="num" id="stat-members">—</div><div class="lbl">Members</div></div>
+    <div class="stat"><div class="num" id="stat-events">—</div><div class="lbl">Events Logged</div></div>
+    <div class="stat"><div class="num">4</div><div class="lbl">Rank Tiers</div></div>
+    <div class="stat"><div class="num">24/7</div><div class="lbl">Command Access</div></div>
+  </div>
+  <div class="section wrap">
+    <div class="section-head">
+      <div class="eyebrow">How access works</div>
+      <h2>Built for real squads, not open signups</h2>
+    </div>
+    <div class="roles">
+      <div class="role-card"><span class="tag">01 · Visitor</span><h3>Apply</h3><p>Submit your Free Fire UID and a bit about yourself. No account needed to apply.</p></div>
+      <div class="role-card"><span class="tag">02 · Member</span><h3>Activate</h3><p>Approved applicants get a one-time activation key to register their account.</p></div>
+      <div class="role-card"><span class="tag">03 · Officer</span><h3>Manage</h3><p>Officers run events, approve attendance, and keep the roster sharp.</p></div>
+      <div class="role-card"><span class="tag">04 · Admin</span><h3>Command</h3><p>Full control over members, ranks, applications, and guild settings.</p></div>
+    </div>
+  </div>
+</section>
 
-        <!-- PAGE: LANDING -->
-        <div id="page-landing" class="page active">
-            <div class="card text-center" style="padding:48px 24px;">
-                <h1 style="font-size:2.8rem; background:linear-gradient(135deg,#f1c40f,#e67e22,#c0392b); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">DEADSHOT</h1>
-                <p style="font-size:1.2rem; color:#b0a89c; margin:8px 0 24px;">Guild Command Center</p>
-                <p style="max-width:500px; margin:0 auto 24px; color:#8a7e72;">The headquarters for the Dead Shoot Free Fire Guild. Manage roster, events, attendance, and more.</p>
-                <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center;">
-                    <a href="#" class="btn btn-gold" data-nav="apply">Apply Now</a>
-                    <a href="#" class="btn" data-nav="activate">Activate Key</a>
-                    <a href="#" class="btn btn-outline" data-nav="login">Login</a>
-                </div>
-            </div>
-            <div class="card">
-                <h2>About the Guild</h2>
-                <p>Dead Shoot is a competitive Free Fire guild focused on scrims, tournaments, and building a strong community. Members gain access to exclusive events, rank progression, and a dedicated command center.</p>
-            </div>
-        </div>
+<!-- APPLY -->
+<section class="view" id="view-apply">
+  <div class="center-panel">
+    <div class="panel">
+      <h2>Apply to Join</h2>
+      <div class="sub">Tell us about yourself. Officers review every application.</div>
+      <div class="msg" id="apply-msg"></div>
+      <form id="apply-form">
+        <div class="field"><label>In-game name</label><input type="text" id="apply-name" required></div>
+        <div class="field"><label>Free Fire UID</label><input type="text" id="apply-uid" required></div>
+        <div class="field"><label>Device</label><input type="text" id="apply-device" placeholder="e.g. iPhone 13, Redmi Note 12"></div>
+        <div class="field"><label>Region</label><input type="text" id="apply-region" placeholder="e.g. Nigeria / MEA"></div>
+        <div class="field"><label>Experience</label><textarea id="apply-exp" placeholder="Previous guilds, rank, playstyle..."></textarea></div>
+        <button class="btn btn-primary btn-block" type="submit" id="apply-btn">
+          <span class="spinner"></span><span class="btn-text">Submit Application</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
 
-        <!-- PAGE: APPLY -->
-        <div id="page-apply" class="page">
-            <div class="card">
-                <h2>Apply to Join</h2>
-                <p class="text-muted">Fill out this form and an officer will review your application.</p>
-                <form id="applyForm">
-                    <div class="form-row">
-                        <label>In-Game Name</label>
-                        <input type="text" id="applyName" placeholder="Your Free Fire nickname" required />
-                    </div>
-                    <div class="form-row">
-                        <label>Free Fire UID</label>
-                        <input type="text" id="applyUid" placeholder="Your 12-digit UID" required />
-                    </div>
-                    <div class="form-row">
-                        <label>Country</label>
-                        <input type="text" id="applyCountry" value="Nigeria" disabled style="opacity:0.7;" />
-                    </div>
-                    <div class="form-row">
-                        <label>State</label>
-                        <select id="applyState" required>
-                            <option value="">Select your state</option>
-                            <option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option><option>Anambra</option>
-                            <option>Bauchi</option><option>Bayelsa</option><option>Benue</option><option>Borno</option>
-                            <option>Cross River</option><option>Delta</option><option>Ebonyi</option><option>Edo</option>
-                            <option>Ekiti</option><option>Enugu</option><option>FCT (Abuja)</option><option>Gombe</option>
-                            <option>Imo</option><option>Jigawa</option><option>Kaduna</option><option>Kano</option>
-                            <option>Katsina</option><option>Kebbi</option><option>Kogi</option><option>Kwara</option>
-                            <option>Lagos</option><option>Nasarawa</option><option>Niger</option><option>Ogun</option>
-                            <option>Ondo</option><option>Osun</option><option>Oyo</option><option>Plateau</option>
-                            <option>Rivers</option><option>Sokoto</option><option>Taraba</option><option>Yobe</option>
-                            <option>Zamfara</option>
-                        </select>
-                    </div>
-                    <div class="form-row">
-                        <label>Account Age</label>
-                        <select id="applyExperience" required>
-                            <option value="">How long have you had this account?</option>
-                            <option>Under 1 year</option>
-                            <option>1 year</option><option>2 years</option><option>3 years</option>
-                            <option>4 years</option><option>5 years</option><option>6 years</option>
-                            <option>7 years</option><option>8+ years</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-gold" id="applyBtn">
-                        <span class="spinner"></span>
-                        <span class="btn-text">Submit Application</span>
-                    </button>
-                </form>
-            </div>
-        </div>
+<!-- ACTIVATE -->
+<section class="view" id="view-activate">
+  <div class="center-panel">
+    <div class="panel">
+      <h2>Activate Account</h2>
+      <div class="sub">Enter the one-time activation key given to you by an officer.</div>
+      <div class="msg" id="activate-msg"></div>
+      <form id="key-form">
+        <div class="field"><label>Activation Key</label><input type="text" id="activate-key" class="mono" placeholder="XXXXXXXXXX" required></div>
+        <button class="btn btn-primary btn-block" type="submit" id="verify-key-btn">
+          <span class="spinner"></span><span class="btn-text">Verify Key</span>
+        </button>
+      </form>
+      <form id="register-form" style="display:none;margin-top:6px;">
+        <div class="field"><label>Username</label><input type="text" id="reg-username" required></div>
+        <div class="field"><label>Email</label><input type="email" id="reg-email" required></div>
+        <div class="field"><label>Password</label><input type="password" id="reg-password" required minlength="6"></div>
+        <button class="btn btn-primary btn-block" type="submit" id="register-btn">
+          <span class="spinner"></span><span class="btn-text">Create Account</span>
+        </button>
+      </form>
+      <div class="switch-link">Already registered? <a href="#login">Log in</a></div>
+    </div>
+  </div>
+</section>
 
-        <!-- PAGE: ACTIVATE / REGISTER -->
-        <div id="page-activate" class="page">
-            <div class="card">
-                <h2>Activate &amp; Register</h2>
-                <p class="text-muted">Enter your activation key to unlock account creation.</p>
-                <form id="activateForm">
-                    <div class="form-row">
-                        <label>Activation Key</label>
-                        <input type="text" id="activationKeyInput" placeholder="e.g. A7F9D3E2" required />
-                    </div>
-                    <button type="button" class="btn" id="verifyKeyBtn">
-                        <span class="spinner"></span>
-                        <span class="btn-text">Verify Key</span>
-                    </button>
-                </form>
-                <div id="registerSection" style="display:none; margin-top:24px; border-top:1px solid #2a1e1a; padding-top:24px;">
-                    <h3>Create Your Account</h3>
-                    <form id="registerForm">
-                        <div class="form-row">
-                            <label>Username (unique)</label>
-                            <input type="text" id="regUsername" placeholder="Choose a unique name" required />
-                        </div>
-                        <div class="form-row">
-                            <label>Email</label>
-                            <input type="email" id="regEmail" placeholder="your@email.com" required />
-                        </div>
-                        <div class="form-row">
-                            <label>Password</label>
-                            <input type="password" id="regPassword" placeholder="Min 6 characters" required minlength="6" />
-                        </div>
-                        <button type="submit" class="btn btn-gold" id="registerBtn">
-                            <span class="spinner"></span>
-                            <span class="btn-text">Create Account</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
+<!-- LOGIN -->
+<section class="view" id="view-login">
+  <div class="center-panel">
+    <div class="panel">
+      <h2>Member Login</h2>
+      <div class="sub">Access your guild dashboard.</div>
+      <div class="msg" id="login-msg"></div>
+      <form id="login-form">
+        <div class="field"><label>Email</label><input type="email" id="login-email" required></div>
+        <div class="field"><label>Password</label><input type="password" id="login-password" required></div>
+        <button class="btn btn-primary btn-block" type="submit" id="login-btn">
+          <span class="spinner"></span><span class="btn-text">Log In</span>
+        </button>
+      </form>
+      <div class="switch-link">Have an activation key? <a href="#activate">Activate account</a></div>
+    </div>
+  </div>
+</section>
 
-        <!-- PAGE: LOGIN -->
-        <div id="page-login" class="page">
-            <div class="card" style="max-width:420px; margin:0 auto;">
-                <h2>Login</h2>
-                <form id="loginForm">
-                    <div class="form-row">
-                        <label>Email</label>
-                        <input type="email" id="loginEmail" placeholder="your@email.com" required />
-                    </div>
-                    <div class="form-row">
-                        <label>Password</label>
-                        <input type="password" id="loginPassword" placeholder="Enter password" required />
-                    </div>
-                    <button type="submit" class="btn" id="loginBtn">
-                        <span class="spinner"></span>
-                        <span class="btn-text">Login</span>
-                    </button>
-                </form>
-            </div>
-        </div>
+<!-- DASHBOARD -->
+<section class="view" id="view-dashboard">
+  <div class="section wrap">
+    <div class="dash-head">
+      <div>
+        <h2>Welcome back<span id="dash-username">.</span></h2>
+        <div class="sub">Your guild status at a glance.</div>
+      </div>
+      <button class="btn btn-danger" id="logout-btn">Log Out</button>
+    </div>
+    <div class="dash-grid">
+      <div class="card">
+        <h3>Member Profile</h3>
+        <div id="profile-rows"></div>
+      </div>
+      <div class="card">
+        <h3>Recent Announcements</h3>
+        <div id="announcements-list"><div class="empty">No announcements yet.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
 
-        <!-- PAGE: DASHBOARD (Member) -->
-        <div id="page-dashboard" class="page">
-            <div class="card">
-                <h2>Dashboard</h2>
-                <div id="dashboardContent">
-                    <p class="text-muted">Loading your profile...</p>
-                </div>
-            </div>
-            <div class="card">
-                <h3>Guild Snapshot</h3>
-                <div id="guildSnapshot" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:16px; text-align:center;">
-                    <div><span class="text-gold" id="totalMembers">-</span><br /><span class="text-muted">Members</span></div>
-                    <div><span class="text-gold" id="totalOfficers">-</span><br /><span class="text-muted">Officers</span></div>
-                    <div><span class="text-gold" id="totalAdmins">-</span><br /><span class="text-muted">Admins</span></div>
-                    <div><span class="text-gold" id="totalEvents">-</span><br /><span class="text-muted">Events</span></div>
-                </div>
-            </div>
-        </div>
+<!-- HQ (OFFICER / ADMIN) -->
+<section class="view" id="view-hq">
+  <div class="section wrap">
+    <div class="dash-head">
+      <div>
+        <h2>Guild HQ</h2>
+        <div class="sub" id="hq-role-note">Officer / Admin control panel.</div>
+      </div>
+      <button class="btn btn-danger" id="hq-logout-btn">Log Out</button>
+    </div>
 
-        <!-- PAGE: ROSTER (Member) -->
-        <div id="page-roster" class="page">
-            <div class="card">
-                <h2>Guild Roster</h2>
-                <div id="rosterContainer">
-                    <div class="skeleton" style="height:60px; margin-bottom:8px;"></div>
-                    <div class="skeleton" style="height:60px; margin-bottom:8px;"></div>
-                    <div class="skeleton" style="height:60px; margin-bottom:8px;"></div>
-                </div>
-            </div>
-        </div>
+    <div class="hq-tabs" id="hq-tabs">
+      <button class="hq-tab active" data-tab="applications">Applications</button>
+      <button class="hq-tab" data-tab="members">Members</button>
+      <button class="hq-tab" data-tab="events">Events</button>
+      <button class="hq-tab" data-tab="announcements">Announcements</button>
+      <button class="hq-tab" data-tab="keys">Activation Keys</button>
+    </div>
 
-        <!-- PAGE: EVENTS (Member view) -->
-        <div id="page-events" class="page">
-            <div class="card">
-                <h2>Upcoming Events</h2>
-                <div id="eventsContainer">
-                    <div class="skeleton" style="height:80px; margin-bottom:12px;"></div>
-                    <div class="skeleton" style="height:80px; margin-bottom:12px;"></div>
-                </div>
-            </div>
-        </div>
+    <!-- APPLICATIONS TAB -->
+    <div class="hq-panel active" id="hq-applications">
+      <div class="msg" id="hq-app-msg"></div>
+      <div id="applications-list"><div class="empty">Loading applications...</div></div>
+    </div>
 
-        <!-- PAGE: PROFILE -->
-        <div id="page-profile" class="page">
-            <div class="card">
-                <h2>My Profile</h2>
-                <form id="profileForm">
-                    <div class="form-row">
-                        <label>Member ID</label>
-                        <input type="text" id="profMemberId" disabled style="opacity:0.7;" />
-                    </div>
-                    <div class="form-row">
-                        <label>Username</label>
-                        <input type="text" id="profUsername" disabled style="opacity:0.7;" />
-                    </div>
-                    <div class="form-row">
-                        <label>Nickname</label>
-                        <input type="text" id="profNickname" placeholder="Your display name" />
-                    </div>
-                    <div class="form-row">
-                        <label>Free Fire UID</label>
-                        <input type="text" id="profUid" placeholder="Your Free Fire UID" />
-                    </div>
-                    <div class="form-row">
-                        <label>Avatar URL</label>
-                        <input type="url" id="profAvatar" placeholder="https://example.com/avatar.jpg" />
-                    </div>
-                    <div class="form-row">
-                        <label>Role</label>
-                        <input type="text" id="profRole" disabled style="opacity:0.7;" />
-                    </div>
-                    <div class="form-row">
-                        <label>Rank</label>
-                        <input type="text" id="profRank" disabled style="opacity:0.7;" />
-                    </div>
-                    <button type="submit" class="btn btn-gold" id="profileSaveBtn">
-                        <span class="spinner"></span>
-                        <span class="btn-text">Save Profile</span>
-                    </button>
-                </form>
-                <hr style="border-color:#2a1e1a; margin:24px 0;" />
-                <h3>Change Password</h3>
-                <form id="passwordForm">
-                    <div class="form-row">
-                        <label>New Password</label>
-                        <input type="password" id="newPassword" placeholder="Min 6 characters" required minlength="6" />
-                    </div>
-                    <button type="submit" class="btn" id="passwordBtn">
-                        <span class="spinner"></span>
-                        <span class="btn-text">Update Password</span>
-                    </button>
-                </form>
-            </div>
-        </div>
+    <!-- MEMBERS TAB -->
+    <div class="hq-panel" id="hq-members">
+      <div class="msg" id="hq-member-msg"></div>
+      <div class="table-wrap"><table class="hq-table" id="members-table">
+        <thead><tr><th>Username</th><th>Member ID</th><th>Rank</th><th>Role</th><th>Status</th></tr></thead>
+        <tbody id="members-tbody"><tr><td colspan="5" class="empty">Loading members...</td></tr></tbody>
+      </table></div>
+    </div>
 
-        <!-- PAGE: HQ (Officer / Admin) -->
-        <div id="page-hq" class="page">
-            <div class="card">
-                <h2>HQ Command Center</h2>
-                <div class="tabs" id="hqTabs">
-                    <button class="tab-btn active" data-tab="hq-applications">Applications</button>
-                    <button class="tab-btn" data-tab="hq-members">Members</button>
-                    <button class="tab-btn" data-tab="hq-events">Events</button>
-                    <button class="tab-btn" data-tab="hq-announcements">Announcements</button>
-                    <button class="tab-btn" data-tab="hq-keys">Activation Keys</button>
-                </div>
+    <!-- EVENTS TAB -->
+    <div class="hq-panel" id="hq-events">
+      <div class="card" style="margin-bottom:20px;">
+        <h3>Create Event</h3>
+        <div class="msg" id="hq-event-msg"></div>
+        <form id="hq-event-form">
+          <div class="field"><label>Title</label><input type="text" id="ev-title" required></div>
+          <div class="field"><label>Type</label>
+            <select id="ev-type">
+              <option value="war">War</option><option value="scrim">Scrim</option>
+              <option value="tournament">Tournament</option><option value="meeting">Meeting</option>
+              <option value="training">Training</option>
+            </select>
+          </div>
+          <div class="field"><label>Date</label><input type="date" id="ev-date" required></div>
+          <div class="field"><label>Time</label><input type="time" id="ev-time" required></div>
+          <div class="field"><label>Description</label><textarea id="ev-desc"></textarea></div>
+          <button class="btn btn-primary btn-block" type="submit" id="hq-event-btn">
+            <span class="spinner"></span><span class="btn-text">Create Event</span>
+          </button>
+        </form>
+      </div>
+      <div id="events-list"><div class="empty">Loading events...</div></div>
+    </div>
 
-                <!-- TAB: Applications -->
-                <div id="hq-applications" class="tab-content active">
-                    <div class="flex-between">
-                        <span class="text-muted">Review incoming applications.</span>
-                    </div>
-                    <div id="hqAppsContainer"><div class="skeleton" style="height:60px;"></div></div>
-                </div>
+    <!-- ANNOUNCEMENTS TAB -->
+    <div class="hq-panel" id="hq-announcements">
+      <div class="card" style="margin-bottom:20px;">
+        <h3>Post Announcement</h3>
+        <div class="msg" id="hq-announce-msg"></div>
+        <form id="hq-announce-form">
+          <div class="field"><label>Title</label><input type="text" id="an-title" required></div>
+          <div class="field"><label>Content</label><textarea id="an-content" required></textarea></div>
+          <button class="btn btn-primary btn-block" type="submit" id="hq-announce-btn">
+            <span class="spinner"></span><span class="btn-text">Post Announcement</span>
+          </button>
+        </form>
+      </div>
+      <div id="hq-announcements-list"><div class="empty">Loading announcements...</div></div>
+    </div>
 
-                <!-- TAB: Members (Admin only) -->
-                <div id="hq-members" class="tab-content">
-                    <div class="flex-between">
-                        <span class="text-muted">Manage guild members.</span>
-                    </div>
-                    <div id="hqMembersContainer"><div class="skeleton" style="height:60px;"></div></div>
-                </div>
+    <!-- KEYS TAB (admin only) -->
+    <div class="hq-panel" id="hq-keys">
+      <div class="card" style="margin-bottom:20px;">
+        <h3>Generate Activation Key</h3>
+        <div class="msg" id="hq-key-msg"></div>
+        <button class="btn btn-primary" id="hq-generate-key-btn">
+          <span class="spinner"></span><span class="btn-text">Generate New Key</span>
+        </button>
+      </div>
+      <div id="keys-list"><div class="empty">Loading keys...</div></div>
+    </div>
+  </div>
+</section>
 
-                <!-- TAB: Events (Officer/Admin) -->
-                <div id="hq-events" class="tab-content">
-                    <form id="hqEventForm" style="margin-bottom:20px; background:#1a1210; padding:16px; border-radius:8px;">
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                            <div class="form-row"><label>Title</label><input type="text" id="hqEventTitle" placeholder="Event name" required /></div>
-                            <div class="form-row"><label>Type</label>
-                                <select id="hqEventType"><option>war</option><option>scrim</option><option>tournament</option><option>meeting</option><option>training</option></select>
-                            </div>
-                            <div class="form-row"><label>Date</label><input type="date" id="hqEventDate" required /></div>
-                            <div class="form-row"><label>Time</label><input type="time" id="hqEventTime" required /></div>
-                        </div>
-                        <div class="form-row"><label>Description</label><textarea id="hqEventDesc" placeholder="Details..."></textarea></div>
-                        <button type="submit" class="btn btn-gold" id="hqEventBtn">
-                            <span class="spinner"></span>
-                            <span class="btn-text">Create Event</span>
-                        </button>
-                    </form>
-                    <div id="hqEventsList"><div class="skeleton" style="height:60px;"></div></div>
-                </div>
+<footer>D&#7431;&#7429;dS&#688;&oslash;&#7451;&#9889; Guild Command Center — Free Fire</footer>
 
-                <!-- TAB: Announcements (Officer/Admin) -->
-                <div id="hq-announcements" class="tab-content">
-                    <form id="hqAnnounceForm" style="margin-bottom:20px; background:#1a1210; padding:16px; border-radius:8px;">
-                        <div class="form-row"><label>Title</label><input type="text" id="hqAnnTitle" placeholder="Announcement title" required /></div>
-                        <div class="form-row"><label>Content</label><textarea id="hqAnnContent" placeholder="Message..." required></textarea></div>
-                        <button type="submit" class="btn btn-gold" id="hqAnnBtn">
-                            <span class="spinner"></span>
-                            <span class="btn-text">Post Announcement</span>
-                        </button>
-                    </form>
-                    <div id="hqAnnounceList"><div class="skeleton" style="height:60px;"></div></div>
-                </div>
+<script>
+// ========== TOAST SYSTEM ==========
+function showToast(message, type='info', duration=4500){
+  const container = document.getElementById('toast-container');
+  const iconMap = { success:'✅', error:'❌', warning:'⚠️', info:'📢' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span class="toast-icon">${iconMap[type]||'📢'}</span><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('hide');
+    setTimeout(() => toast.remove(), 400);
+  }, duration);
+}
 
-                <!-- TAB: Activation Keys (Admin only) -->
-                <div id="hq-keys" class="tab-content">
-                    <div class="flex-between">
-                        <span class="text-muted">Generate one-time activation keys.</span>
-                        <button class="btn btn-gold btn-sm" id="hqGenKeyBtn">
-                            <span class="spinner"></span>
-                            <span class="btn-text">Generate Key</span>
-                        </button>
-                    </div>
-                    <div id="hqKeysContainer" style="margin-top:16px;"><div class="skeleton" style="height:60px;"></div></div>
-                </div>
-            </div>
-        </div>
+// ========== LOADING HELPER ==========
+function setLoading(btn, loading){
+  if(!btn) return;
+  if(loading){
+    btn.classList.add('loading');
+    btn.disabled = true;
+  }else{
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+}
 
-    </div><!-- /container -->
+// ========== SUPABASE INIT ==========
+const SUPABASE_URL = 'https://lipblkisjfbgysgteseh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpcGJsa2lzamZiZ3lzZ3Rlc2VoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM2MjEsImV4cCI6MjA5OTEwOTYyMX0.V16tP9fJojhZ4gD6_QeCDCR09T4Ng5hlZS5Luq16-uw';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    <script>
-        // ============================================================
-        // SUPABASE CONFIG
-        // ============================================================
-        const SUPABASE_URL = 'https://lipblkisjfbgsgtsesh.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpcGJsa2lzZmZiZ3lzZ3Rlc2VoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM2MjEsImV4cCI6MjA5OTEwOTYyMX0.V16tP9fJoihZ4gD6_QeCDCR09T4Ng5hIZS5Luq16-uw';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentSession = null;
+let currentProfile = null;
 
-        // ============================================================
-        // TOAST SYSTEM
-        // ============================================================
-        function showToast(message, type = 'info', duration = 4500) {
-            const container = document.getElementById('toast-container');
-            const iconMap = { success: '✅', error: '❌', warning: '⚠️', info: '📢' };
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<span class="toast-icon">${iconMap[type] || '📢'}</span><span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.add('hide');
-                setTimeout(() => toast.remove(), 400);
-            }, duration);
-        }
+const views = ['landing','apply','activate','login','dashboard','hq'];
+function showView(name){
+  views.forEach(v => document.getElementById('view-'+v).classList.toggle('active', v === name));
+  window.scrollTo(0,0);
+}
 
-        // ============================================================
-        // HELPERS: Loading state for buttons
-        // ============================================================
-        function setLoading(btn, loading) {
-            if (!btn) return;
-            if (loading) {
-                btn.classList.add('loading');
-                btn.disabled = true;
-            } else {
-                btn.classList.remove('loading');
-                btn.disabled = false;
-            }
-        }
+async function ensureProfile(){
+  if(currentProfile) return currentProfile;
+  const { data: { user } } = await sb.auth.getUser();
+  if(!user) return null;
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  currentProfile = profile;
+  return profile;
+}
 
-        // ============================================================
-        // NAVIGATION
-        // ============================================================
-        let currentUser = null;
-        let currentProfile = null;
-        let verifiedKey = null; // stores key for registration
+function renderNav(){
+  const nav = document.getElementById('navlinks');
+  if(currentSession){
+    const isStaff = currentProfile && (currentProfile.role === 'officer' || currentProfile.role === 'admin');
+    nav.innerHTML = `<a href="#dashboard">Dashboard</a>${isStaff ? '<a href="#hq">HQ</a>' : ''}<button id="nav-logout">Log Out</button>`;
+    document.getElementById('nav-logout').onclick = doLogout;
+  } else {
+    nav.innerHTML = `<a href="#apply">Apply</a><a href="#activate">Activate</a><a class="cta" href="#login">Login</a>`;
+  }
+}
 
-        const navLinks = document.getElementById('navLinks');
-        const pages = {
-            landing: document.getElementById('page-landing'),
-            apply: document.getElementById('page-apply'),
-            activate: document.getElementById('page-activate'),
-            login: document.getElementById('page-login'),
-            dashboard: document.getElementById('page-dashboard'),
-            roster: document.getElementById('page-roster'),
-            events: document.getElementById('page-events'),
-            profile: document.getElementById('page-profile'),
-            hq: document.getElementById('page-hq'),
-        };
+async function route(){
+  const hash = (location.hash || '#landing').replace('#','');
+  if(hash === 'dashboard'){
+    if(!currentSession){ location.hash = '#login'; return; }
+    await loadDashboard();
+    showView('dashboard');
+    return;
+  }
+  if(hash === 'hq'){
+    if(!currentSession){ location.hash = '#login'; return; }
+    const profile = await ensureProfile();
+    if(!profile || (profile.role !== 'officer' && profile.role !== 'admin')){
+      location.hash = '#dashboard'; return;
+    }
+    showView('hq');
+    initHQ();
+    return;
+  }
+  showView(views.includes(hash) ? hash : 'landing');
+}
+window.addEventListener('hashchange', route);
 
-        function navigateTo(pageId) {
-            Object.values(pages).forEach(p => p.classList.remove('active'));
-            const target = document.getElementById(`page-${pageId}`);
-            if (target) target.classList.add('active');
-            // Update nav active state
-            document.querySelectorAll('.nav-links a[data-nav]').forEach(a => {
-                a.classList.toggle('active', a.dataset.nav === pageId);
-            });
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+// ========== APPLY ==========
+document.getElementById('apply-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('apply-btn');
+  setLoading(btn, true);
+  try {
+    const { error } = await sb.from('applications').insert({
+      applicant_name: document.getElementById('apply-name').value.trim(),
+      ff_uid: document.getElementById('apply-uid').value.trim(),
+      device: document.getElementById('apply-device').value.trim(),
+      region: document.getElementById('apply-region').value.trim(),
+      experience: document.getElementById('apply-exp').value.trim()
+    });
+    if(error) throw error;
+    showToast('Application submitted! An officer will review it.', 'success');
+    e.target.reset();
+  } catch(err){
+    showToast('Something went wrong: ' + err.message, 'error');
+  }
+  setLoading(btn, false);
+});
 
-        function renderNav() {
-            const isLoggedIn = !!currentUser;
-            const isAdmin = currentProfile?.role === 'admin';
-            const isOfficer = currentProfile?.role === 'officer' || isAdmin;
-            let html = '';
-            if (!isLoggedIn) {
-                html = `
-                    <a href="#" data-nav="landing" class="active">Home</a>
-                    <a href="#" data-nav="apply">Apply</a>
-                    <a href="#" data-nav="activate">Activate</a>
-                    <a href="#" data-nav="login">Login</a>
-                `;
-            } else {
-                html = `
-                    <a href="#" data-nav="dashboard">Dashboard</a>
-                    <a href="#" data-nav="roster">Roster</a>
-                    <a href="#" data-nav="events">Events</a>
-                    <a href="#" data-nav="profile">Profile</a>
-                    ${(isOfficer) ? `<a href="#" data-nav="hq">HQ</a>` : ''}
-                    <a href="#" class="logout-btn" id="logoutBtn">Logout</a>
-                `;
-            }
-            navLinks.innerHTML = html;
-            // Attach nav click handlers
-            navLinks.querySelectorAll('a[data-nav]').forEach(a => {
-                a.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const page = a.dataset.nav;
-                    if (page === 'landing' || page === 'apply' || page === 'activate' || page === 'login' ||
-                        page === 'dashboard' || page === 'roster' || page === 'events' || page === 'profile' ||
-                        page === 'hq') {
-                        navigateTo(page);
-                        // Refresh data if needed
-                        if (page === 'dashboard') loadDashboard();
-                        if (page === 'roster') loadRoster();
-                        if (page === 'events') loadEvents();
-                        if (page === 'profile') loadProfile();
-                        if (page === 'hq') loadHQData();
-                    }
-                });
-            });
-            // Logout handler
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    await supabase.auth.signOut();
-                    currentUser = null;
-                    currentProfile = null;
-                    renderNav();
-                    navigateTo('landing');
-                    showToast('Logged out successfully', 'success');
-                });
-            }
-        }
+// ========== ACTIVATE ==========
+let verifiedKey = null;
 
-        // ============================================================
-        // AUTH STATE
-        // ============================================================
-        supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-                currentUser = session?.user || null;
-                if (currentUser) {
-                    await fetchProfile();
-                    renderNav();
-                    navigateTo('dashboard');
-                    loadDashboard();
-                }
-            } else if (event === 'SIGNED_OUT') {
-                currentUser = null;
-                currentProfile = null;
-                renderNav();
-                navigateTo('landing');
-            }
-        });
+document.getElementById('key-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('verify-key-btn');
+  setLoading(btn, true);
+  try {
+    const key = document.getElementById('activate-key').value.trim();
+    const { data, error } = await sb.rpc('check_activation_key', { key_input: key });
+    if(error || !data) throw new Error('Invalid or expired activation key.');
+    verifiedKey = key;
+    showToast('Key verified! Create your account below.', 'success');
+    document.getElementById('key-form').style.display = 'none';
+    document.getElementById('register-form').style.display = 'block';
+  } catch(err){
+    showToast(err.message, 'error');
+  }
+  setLoading(btn, false);
+});
 
-        async function fetchProfile() {
-            if (!currentUser) return;
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', currentUser.id)
-                .maybeSingle();
-            if (error) {
-                console.error('Fetch profile error:', error);
-                return;
-            }
-            currentProfile = data;
-            return data;
-        }
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('register-btn');
+  setLoading(btn, true);
+  try {
+    const username = document.getElementById('reg-username').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
 
-        // ============================================================
-        // LANDING / APPLY
-        // ============================================================
-        document.getElementById('applyForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('applyBtn');
-            setLoading(btn, true);
-            try {
-                const name = document.getElementById('applyName').value.trim();
-                const uid = document.getElementById('applyUid').value.trim();
-                const state = document.getElementById('applyState').value;
-                const experience = document.getElementById('applyExperience').value;
-                if (!name || !uid || !state || !experience) {
-                    showToast('Please fill in all fields.', 'error');
-                    setLoading(btn, false);
-                    return;
-                }
-                const { error } = await supabase.from('applications').insert({
-                    applicant_name: name,
-                    ff_uid: uid,
-                    region: 'Nigeria',
-                    state: state,
-                    experience: experience,
-                });
-                if (error) throw error;
-                showToast('Application submitted! An officer will review it.', 'success');
-                document.getElementById('applyForm').reset();
-                document.getElementById('applyCountry').value = 'Nigeria';
-            } catch (err) {
-                showToast(err.message || 'Submission failed.', 'error');
-            }
-            setLoading(btn, false);
-        });
+    const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password });
+    if(signUpError) throw signUpError;
+    const userId = signUpData.user?.id;
+    if(!userId) throw new Error('Account created but no session returned.');
 
-        // ============================================================
-        // ACTIVATE / REGISTER
-        // ============================================================
-        document.getElementById('verifyKeyBtn').addEventListener('click', async () => {
-            const btn = document.getElementById('verifyKeyBtn');
-            setLoading(btn, true);
-            const keyInput = document.getElementById('activationKeyInput').value.trim().toUpperCase();
-            if (!keyInput) {
-                showToast('Please enter an activation key.', 'error');
-                setLoading(btn, false);
-                return;
-            }
-            try {
-                const { data, error } = await supabase
-                    .rpc('check_activation_key', { key_input: keyInput });
-                if (error) throw error;
-                if (data === true) {
-                    verifiedKey = keyInput;
-                    document.getElementById('registerSection').style.display = 'block';
-                    showToast('Key verified! Create your account.', 'success');
-                } else {
-                    showToast('Invalid, used, or expired key.', 'error');
-                }
-            } catch (err) {
-                showToast(err.message || 'Verification failed.', 'error');
-            }
-            setLoading(btn, false);
-        });
+    const { data: consumed, error: consumeError } = await sb.rpc('consume_activation_key', {
+      key_input: verifiedKey, new_user_id: userId, new_username: username
+    });
+    if(consumeError || !consumed) throw new Error('Activation failed. Contact an officer.');
 
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('registerBtn');
-            setLoading(btn, true);
-            const username = document.getElementById('regUsername').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const password = document.getElementById('regPassword').value;
-            if (!username || !email || !password || password.length < 6) {
-                showToast('Please fill all fields (password 6+ chars).', 'error');
-                setLoading(btn, false);
-                return;
-            }
-            if (!verifiedKey) {
-                showToast('Please verify your activation key first.', 'error');
-                setLoading(btn, false);
-                return;
-            }
-            try {
-                // 1. Sign up with Supabase Auth
-                const { data, error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                });
-                if (error) throw error;
-                if (!data.user) throw new Error('Signup failed.');
+    showToast('Account activated! Redirecting...', 'success');
+    currentSession = signUpData.session;
+    setTimeout(() => { location.hash = '#dashboard'; }, 1200);
+  } catch(err){
+    showToast(err.message, 'error');
+  }
+  setLoading(btn, false);
+});
 
-                // 2. Consume the activation key + create profile
-                const { data: consumeResult, error: consumeError } = await supabase
-                    .rpc('consume_activation_key', {
-                        key_input: verifiedKey,
-                        new_user_id: data.user.id,
-                        new_username: username,
-                    });
-                if (consumeError) throw consumeError;
-                if (consumeResult !== true) throw new Error('Activation key could not be consumed.');
+// ========== LOGIN ==========
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  setLoading(btn, true);
+  try {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if(error) throw error;
+    currentSession = data.session;
+    currentProfile = null;
+    await ensureProfile();
+    renderNav();
+    location.hash = '#dashboard';
+    showToast('Logged in!', 'success');
+  } catch(err){
+    showToast('Login failed: ' + err.message, 'error');
+  }
+  setLoading(btn, false);
+});
 
-                showToast('Account created successfully!', 'success');
-                verifiedKey = null;
-                document.getElementById('registerSection').style.display = 'none';
-                document.getElementById('activateForm').reset();
-                // Sign in automatically
-                const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-                if (signInError) {
-                    showToast('Account created! Please log in.', 'warning');
-                    navigateTo('login');
-                }
-            } catch (err) {
-                showToast(err.message || 'Registration failed.', 'error');
-                // If auth user was created but profile failed, clean up: sign out the orphan
-                await supabase.auth.signOut();
-            }
-            setLoading(btn, false);
-        });
+// ========== LOGOUT ==========
+async function doLogout(){
+  await sb.auth.signOut();
+  currentSession = null;
+  currentProfile = null;
+  renderNav();
+  location.hash = '#landing';
+  showToast('Logged out.', 'warning');
+}
+document.getElementById('logout-btn').addEventListener('click', doLogout);
+document.getElementById('hq-logout-btn').addEventListener('click', doLogout);
 
-        // ============================================================
-        // LOGIN
-        // ============================================================
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('loginBtn');
-            setLoading(btn, true);
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            try {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                showToast('Logged in!', 'success');
-                // Auth state change will handle navigation
-            } catch (err) {
-                showToast(err.message || 'Login failed.', 'error');
-            }
-            setLoading(btn, false);
-        });
+// ========== DASHBOARD ==========
+async function loadDashboard(){
+  const { data: { user } } = await sb.auth.getUser();
+  if(!user) return;
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  currentProfile = profile;
+  document.getElementById('dash-username').textContent = profile ? `, ${profile.username}` : '';
+  const rows = document.getElementById('profile-rows');
+  if(profile){
+    const badgeClass = profile.role === 'admin' ? 'admin' : (profile.role === 'officer' ? 'officer' : 'member');
+    rows.innerHTML = `
+      <div class="profile-row"><span class="k">Member ID</span><span class="v">${profile.member_id}</span></div>
+      <div class="profile-row"><span class="k">Username</span><span class="v">${profile.username}</span></div>
+      <div class="profile-row"><span class="k">Rank</span><span class="v">${profile.rank}</span></div>
+      <div class="profile-row"><span class="k">Role</span><span class="badge ${badgeClass}">${profile.role}</span></div>
+      <div class="profile-row"><span class="k">Status</span><span class="v">${profile.status}</span></div>
+      <div class="profile-row"><span class="k">Joined</span><span class="v">${profile.join_date}</span></div>
+    `;
+  } else {
+    rows.innerHTML = `<div class="empty">Profile not found.</div>`;
+  }
 
-        // ============================================================
-        // DASHBOARD
-        // ============================================================
-        async function loadDashboard() {
-            if (!currentUser) return;
-            const profile = await fetchProfile();
-            if (!profile) {
-                document.getElementById('dashboardContent').innerHTML =
-                    '<p class="text-red">Could not load profile.</p>';
-                return;
-            }
-            document.getElementById('dashboardContent').innerHTML = `
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:500px;">
-                    <span class="text-muted">Member ID</span><span><strong>${profile.member_id || 'N/A'}</strong></span>
-                    <span class="text-muted">Username</span><span><strong>${profile.username}</strong></span>
-                    <span class="text-muted">Nickname</span><span><strong>${profile.nickname || '—'}</strong></span>
-                    <span class="text-muted">Rank</span><span><span class="badge">${profile.rank || 'Recruit'}</span></span>
-                    <span class="text-muted">Role</span><span><span class="badge ${profile.role}">${profile.role || 'member'}</span></span>
-                    <span class="text-muted">Status</span><span><span class="badge">${profile.status || 'active'}</span></span>
-                </div>
-            `;
-            // Load snapshot counts
-            try {
-                const { count: members } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-                const { count: officers } = await supabase.from('profiles').select('*', { count: 'exact', head: true })
-                    .eq('role', 'officer');
-                const { count: admins } = await supabase.from('profiles').select('*', { count: 'exact', head: true })
-                    .eq('role', 'admin');
-                const { count: events } = await supabase.from('events').select('*', { count: 'exact', head: true });
-                document.getElementById('totalMembers').textContent = members || 0;
-                document.getElementById('totalOfficers').textContent = officers || 0;
-                document.getElementById('totalAdmins').textContent = admins || 0;
-                document.getElementById('totalEvents').textContent = events || 0;
-            } catch (e) { /* ignore */ }
-        }
+  const { data: announcements } = await sb.from('announcements').select('*').order('created_at', { ascending:false }).limit(5);
+  const list = document.getElementById('announcements-list');
+  if(announcements && announcements.length){
+    list.innerHTML = announcements.map(a => `
+      <div class="profile-row" style="display:block;">
+        <div style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:15px;">${a.title}</div>
+        <div style="color:var(--muted);font-size:13px;margin-top:3px;">${a.content}</div>
+      </div>
+    `).join('');
+  }
+}
 
-        // ============================================================
-        // ROSTER
-        // ============================================================
-        async function loadRoster() {
-            const container = document.getElementById('rosterContainer');
-            container.innerHTML = '<div class="skeleton" style="height:60px;"></div><div class="skeleton" style="height:60px;"></div>';
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('username, nickname, rank, role, avatar_url, member_id')
-                    .order('username');
-                if (error) throw error;
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-muted">No members found.</p>';
-                    return;
-                }
-                let html = '<div class="roster-grid">';
-                data.forEach(p => {
-                    const avatar = p.avatar_url || '';
-                    const displayName = p.nickname || p.username;
-                    html += `
-                        <div class="roster-card">
-                            <div class="avatar">${avatar ? `<img src="${avatar}" alt="avatar" />` : '🎯'}</div>
-                            <div class="name">${displayName}</div>
-                            <div class="rank">${p.rank || 'Recruit'} <span class="badge ${p.role}">${p.role}</span></div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                container.innerHTML = html;
-            } catch (err) {
-                container.innerHTML = `<p class="text-red">Error loading roster: ${err.message}</p>`;
-            }
-        }
+// ========== LANDING STATS ==========
+async function loadStats(){
+  const { count: memberCount } = await sb.from('profiles').select('*', { count:'exact', head:true });
+  const { count: eventCount } = await sb.from('events').select('*', { count:'exact', head:true });
+  if(memberCount !== null) document.getElementById('stat-members').textContent = memberCount;
+  if(eventCount !== null) document.getElementById('stat-events').textContent = eventCount;
+}
 
-        // ============================================================
-        // EVENTS (Member view)
-        // ============================================================
-        async function loadEvents() {
-            const container = document.getElementById('eventsContainer');
-            container.innerHTML = '<div class="skeleton" style="height:80px;"></div><div class="skeleton" style="height:80px;"></div>';
-            try {
-                const { data, error } = await supabase
-                    .from('events')
-                    .select('*')
-                    .in('status', ['upcoming', 'live'])
-                    .order('event_date', { ascending: true });
-                if (error) throw error;
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-muted">No upcoming events.</p>';
-                    return;
-                }
-                let html = '';
-                for (const ev of data) {
-                    // Check if user already confirmed
-                    let userStatus = 'not-registered';
-                    if (currentUser) {
-                        const { data: att } = await supabase
-                            .from('attendance')
-                            .select('status')
-                            .eq('event_id', ev.id)
-                            .eq('member_id', currentUser.id)
-                            .maybeSingle();
-                        if (att) userStatus = att.status;
-                    }
-                    const isConfirmed = userStatus === 'confirmed';
-                    const isCheckedIn = userStatus === 'checked_in';
-                    html += `
-                        <div style="background:#1a1210; border-radius:8px; padding:16px; margin-bottom:12px; border-left:4px solid ${ev.type === 'war' ? '#e74c3c' : '#f1c40f'};">
-                            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-                                <div>
-                                    <strong style="font-size:1.1rem;">${ev.title}</strong>
-                                    <span class="badge">${ev.type}</span>
-                                    <span class="badge" style="background:#2c3e50;">${ev.event_date} ${ev.event_time}</span>
-                                </div>
-                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                    ${!isConfirmed ? `<button class="btn btn-sm btn-success confirm-event-btn" data-id="${ev.id}"><span class="spinner"></span><span class="btn-text">Confirm Attendance</span></button>` : 
-                                    `<span class="badge" style="background:#27ae60;">${isCheckedIn ? '✅ Checked In' : 'Confirmed'}</span>`}
-                                    ${isConfirmed && !isCheckedIn ? `<button class="btn btn-sm btn-gold checkin-event-btn" data-id="${ev.id}"><span class="spinner"></span><span class="btn-text">Check In</span></button>` : ''}
-                                    ${ev.description ? `<span class="text-muted" style="width:100%;">${ev.description}</span>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-                container.innerHTML = html;
-                // Attach event listeners
-                container.querySelectorAll('.confirm-event-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const id = btn.dataset.id;
-                        setLoading(btn, true);
-                        const { error } = await supabase.from('attendance').insert({
-                            event_id: id,
-                            member_id: currentUser.id,
-                            status: 'confirmed'
-                        });
-                        setLoading(btn, false);
-                        if (error) showToast(error.message, 'error');
-                        else { showToast('Attendance confirmed!', 'success');
-                            loadEvents(); }
-                    });
-                });
-                container.querySelectorAll('.checkin-event-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const id = btn.dataset.id;
-                        setLoading(btn, true);
-                        const { error } = await supabase
-                            .from('attendance')
-                            .update({ status: 'checked_in', checked_in_at: new Date().toISOString() })
-                            .eq('event_id', id)
-                            .eq('member_id', currentUser.id);
-                        setLoading(btn, false);
-                        if (error) showToast(error.message, 'error');
-                        else { showToast('Checked in!', 'success');
-                            loadEvents(); }
-                    });
-                });
-            } catch (err) {
-                container.innerHTML = `<p class="text-red">Error: ${err.message}</p>`;
-            }
-        }
+// ======================================================
+// HQ PORTAL (Officer / Admin)
+// ======================================================
+let hqInitialized = false;
 
-        // ============================================================
-        // PROFILE
-        // ============================================================
-        async function loadProfile() {
-            const p = currentProfile;
-            if (!p) return;
-            document.getElementById('profMemberId').value = p.member_id || '';
-            document.getElementById('profUsername').value = p.username || '';
-            document.getElementById('profNickname').value = p.nickname || '';
-            document.getElementById('profUid').value = p.free_fire_uid || '';
-            document.getElementById('profAvatar').value = p.avatar_url || '';
-            document.getElementById('profRole').value = p.role || 'member';
-            document.getElementById('profRank').value = p.rank || 'Recruit';
-        }
+function initHQ(){
+  const isAdmin = currentProfile && currentProfile.role === 'admin';
+  document.getElementById('hq-role-note').textContent =
+    isAdmin ? 'Admin access — full control panel.' : 'Officer access — events, attendance, and applications view.';
 
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('profileSaveBtn');
-            setLoading(btn, true);
-            try {
-                const updates = {
-                    nickname: document.getElementById('profNickname').value.trim(),
-                    free_fire_uid: document.getElementById('profUid').value.trim(),
-                    avatar_url: document.getElementById('profAvatar').value.trim(),
-                };
-                const { error } = await supabase
-                    .from('profiles')
-                    .update(updates)
-                    .eq('id', currentUser.id);
-                if (error) throw error;
-                showToast('Profile updated!', 'success');
-                await fetchProfile();
-                loadProfile();
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-            setLoading(btn, false);
-        });
+  document.querySelectorAll('.hq-tab').forEach(btn => {
+    if(btn.dataset.tab === 'members' || btn.dataset.tab === 'keys'){
+      btn.style.display = isAdmin ? '' : 'none';
+    }
+  });
 
-        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('passwordBtn');
-            setLoading(btn, true);
-            const newPass = document.getElementById('newPassword').value;
-            try {
-                const { error } = await supabase.auth.updateUser({ password: newPass });
-                if (error) throw error;
-                showToast('Password updated!', 'success');
-                document.getElementById('newPassword').value = '';
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-            setLoading(btn, false);
-        });
+  if(!hqInitialized){
+    document.querySelectorAll('.hq-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchHQTab(btn.dataset.tab));
+    });
+    document.getElementById('hq-event-form').addEventListener('submit', createEvent);
+    document.getElementById('hq-announce-form').addEventListener('submit', postAnnouncement);
+    document.getElementById('hq-generate-key-btn').addEventListener('click', generateRawKey);
+    hqInitialized = true;
+  }
 
-        // ============================================================
-        // HQ - MAIN CONTROLLER
-        // ============================================================
-        let hqTabMap = {};
+  switchHQTab('applications');
+}
 
-        function initHQTabs() {
-            document.querySelectorAll('#hqTabs .tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('#hqTabs .tab-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    const tabId = btn.dataset.tab;
-                    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-                    const target = document.getElementById(tabId);
-                    if (target) target.classList.add('active');
-                    loadHQTab(tabId);
-                });
-            });
-        }
+function switchHQTab(tab){
+  document.querySelectorAll('.hq-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.hq-panel').forEach(p => p.classList.toggle('active', p.id === 'hq-' + tab));
+  if(tab === 'applications') loadApplications();
+  if(tab === 'members') loadMembers();
+  if(tab === 'events') loadEventsHQ();
+  if(tab === 'announcements') loadAnnouncementsHQ();
+  if(tab === 'keys') loadKeys();
+}
 
-        async function loadHQData() {
-            // Load all tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                const tabId = btn.dataset.tab;
-                if (document.getElementById(tabId).classList.contains('active')) {
-                    loadHQTab(tabId);
-                }
-            });
-        }
+// ========== APPLICATIONS (with spinner on approve/reject) ==========
+async function loadApplications(){
+  const list = document.getElementById('applications-list');
+  list.innerHTML = `<div class="empty">Loading...</div>`;
+  const { data: apps, error } = await sb.from('applications').select('*').order('created_at', { ascending:false }).limit(30);
+  if(error || !apps || !apps.length){
+    list.innerHTML = `<div class="empty">No applications yet.</div>`;
+    return;
+  }
+  const isAdmin = currentProfile.role === 'admin';
+  list.innerHTML = apps.map(a => `
+    <div class="list-card">
+      <div class="info">
+        <h4>${a.applicant_name} <span class="badge ${a.status==='approved'?'officer':(a.status==='rejected'?'admin':'member')}">${a.status}</span></h4>
+        <p>UID: ${a.ff_uid} · ${a.device || '—'} · ${a.region || '—'}<br>${a.experience || ''}</p>
+      </div>
+      ${isAdmin && a.status === 'pending' ? `
+      <div class="actions">
+        <button class="btn btn-sm btn-approve" data-id="${a.id}" data-action="approve">
+          <span class="spinner"></span><span class="btn-text">Approve</span>
+        </button>
+        <button class="btn btn-sm btn-reject" data-id="${a.id}" data-action="reject">
+          <span class="spinner"></span><span class="btn-text">Reject</span>
+        </button>
+      </div>` : ''}
+    </div>
+  `).join('');
 
-        async function loadHQTab(tabId) {
-            switch (tabId) {
-                case 'hq-applications':
-                    await loadHQApplications();
-                    break;
-                case 'hq-members':
-                    await loadHQMembers();
-                    break;
-                case 'hq-events':
-                    await loadHQEvents();
-                    break;
-                case 'hq-announcements':
-                    await loadHQAnnouncements();
-                    break;
-                case 'hq-keys':
-                    await loadHQKeys();
-                    break;
-            }
-        }
+  // Attach event listeners for approve/reject
+  list.querySelectorAll('[data-action="approve"]').forEach(btn => {
+    btn.addEventListener('click', () => handleApplication(btn.dataset.id, 'approve', btn));
+  });
+  list.querySelectorAll('[data-action="reject"]').forEach(btn => {
+    btn.addEventListener('click', () => handleApplication(btn.dataset.id, 'reject', btn));
+  });
+}
 
-        // ---- HQ APPLICATIONS ----
-        async function loadHQApplications() {
-            const container = document.getElementById('hqAppsContainer');
-            container.innerHTML = '<div class="skeleton" style="height:60px;"></div>';
-            try {
-                const { data, error } = await supabase
-                    .from('applications')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                if (error) throw error;
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-muted">No applications yet.</p>';
-                    return;
-                }
-                const isAdmin = currentProfile?.role === 'admin';
-                let html =
-                    `<div class="table-wrap"><table><thead><tr><th>Name</th><th>UID</th><th>State</th><th>Exp.</th><th>Status</th>${isAdmin ? '<th>Action</th>' : ''}</tr></thead><tbody>`;
-                data.forEach(app => {
-                    html += `<tr>
-                        <td><strong>${app.applicant_name}</strong></td>
-                        <td>${app.ff_uid}</td>
-                        <td>${app.state || '—'}</td>
-                        <td>${app.experience || '—'}</td>
-                        <td><span class="badge">${app.status}</span></td>
-                        ${isAdmin ? `<td>
-                            ${app.status === 'pending' ? `
-                                <button class="btn btn-success btn-sm hq-app-approve" data-id="${app.id}" style="margin-right:4px;"><span class="spinner"></span><span class="btn-text">Approve</span></button>
-                                <button class="btn btn-danger btn-sm hq-app-reject" data-id="${app.id}"><span class="spinner"></span><span class="btn-text">Reject</span></button>
-                            ` : ''}
-                        </td>` : ''}
-                    </tr>`;
-                });
-                html += '</tbody></table></div>';
-                container.innerHTML = html;
+async function handleApplication(appId, action, btn){
+  setLoading(btn, true);
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if(action === 'approve'){
+      // Generate key
+      const { data: keyRow, error: keyErr } = await sb.from('activation_keys')
+        .insert({ application_id: appId }).select().single();
+      if(keyErr) throw new Error('Failed to generate key: ' + keyErr.message);
+      await sb.from('applications').update({ status: 'approved', reviewed_by: user.id }).eq('id', appId);
+      showToast(`Approved! Key: ${keyRow.key}`, 'success');
+    } else {
+      await sb.from('applications').update({ status: 'rejected', reviewed_by: user.id }).eq('id', appId);
+      showToast('Rejected.', 'warning');
+    }
+    loadApplications();
+  } catch(err){
+    showToast(err.message, 'error');
+  }
+  setLoading(btn, false);
+}
 
-                if (isAdmin) {
-                    container.querySelectorAll('.hq-app-approve').forEach(btn => {
-                        btn.addEventListener('click', async () => {
-                            const id = btn.dataset.id;
-                            setLoading(btn, true);
-                            try {
-                                // Update status
-                                const { error: upErr } = await supabase
-                                    .from('applications')
-                                    .update({ status: 'approved', reviewed_by: currentUser.id })
-                                    .eq('id', id);
-                                if (upErr) throw upErr;
-                                // Generate key linked to this application
-                                const { data: keyData, error: keyErr } = await supabase
-                                    .from('activation_keys')
-                                    .insert({ application_id: id, expires_at: new Date(Date.now() + 30 * 24 * 60 *
-                                            60 * 1000).toISOString() })
-                                    .select('key')
-                                    .single();
-                                if (keyErr) throw keyErr;
-                                showToast(`Approved! Key: ${keyData.key}`, 'success');
-                                loadHQApplications();
-                            } catch (err) {
-                                showToast(err.message, 'error');
-                            }
-                            setLoading(btn, false);
-                        });
-                    });
-                    container.querySelectorAll('.hq-app-reject').forEach(btn => {
-                        btn.addEventListener('click', async () => {
-                            const id = btn.dataset.id;
-                            setLoading(btn, true);
-                            const { error } = await supabase
-                                .from('applications')
-                                .update({ status: 'rejected', reviewed_by: currentUser.id })
-                                .eq('id', id);
-                            setLoading(btn, false);
-                            if (error) showToast(error.message, 'error');
-                            else { showToast('Rejected.', 'warning');
-                                loadHQApplications(); }
-                        });
-                    });
-                }
-            } catch (err) {
-                container.innerHTML = `<p class="text-red">${err.message}</p>`;
-            }
-        }
+// ========== MEMBERS (with spinner on dropdown update) ==========
+async function loadMembers(){
+  const tbody = document.getElementById('members-tbody');
+  tbody.innerHTML = `<tr><td colspan="5" class="empty">Loading...</td></tr>`;
+  const { data: members, error } = await sb.from('profiles').select('*').order('join_date', { ascending:true });
+  if(error || !members || !members.length){
+    tbody.innerHTML = `<tr><td colspan="5" class="empty">No members found.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = members.map(m => `
+    <tr>
+      <td>${m.username}</td>
+      <td class="mono">${m.member_id}</td>
+      <td>${m.rank}</td>
+      <td>
+        <select data-member="${m.id}" data-field="role" class="member-update-select">
+          <option value="member" ${m.role==='member'?'selected':''}>Member</option>
+          <option value="officer" ${m.role==='officer'?'selected':''}>Officer</option>
+          <option value="admin" ${m.role==='admin'?'selected':''}>Admin</option>
+        </select>
+      </td>
+      <td>
+        <select data-member="${m.id}" data-field="status" class="member-update-select">
+          <option value="active" ${m.status==='active'?'selected':''}>Active</option>
+          <option value="inactive" ${m.status==='inactive'?'selected':''}>Inactive</option>
+          <option value="suspended" ${m.status==='suspended'?'selected':''}>Suspended</option>
+        </select>
+      </td>
+    </tr>
+  `).join('');
 
-        // ---- HQ MEMBERS (Admin only) ----
-        async function loadHQMembers() {
-            const container = document.getElementById('hqMembersContainer');
-            container.innerHTML = '<div class="skeleton" style="height:60px;"></div>';
-            if (currentProfile?.role !== 'admin') {
-                container.innerHTML = '<p class="text-red">Admin access required.</p>';
-                return;
-            }
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .order('username');
-                if (error) throw error;
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-muted">No members.</p>';
-                    return;
-                }
-                let html =
-                    `<div class="table-wrap"><table><thead><tr><th>Username</th><th>Member ID</th><th>Rank</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
-                data.forEach(p => {
-                    html += `<tr>
-                        <td><strong>${p.username}</strong></td>
-                        <td>${p.member_id || '—'}</td>
-                        <td>${p.rank || 'Recruit'}</td>
-                        <td><span class="badge ${p.role}">${p.role}</span></td>
-                        <td><span class="badge">${p.status || 'active'}</span></td>
-                        <td>
-                            <select class="hq-role-select" data-id="${p.id}" style="width:auto; padding:4px 8px; background:#1f1815; border:1px solid #332520; border-radius:4px; color:#f0e6dc;">
-                                <option value="member" ${p.role === 'member' ? 'selected' : ''}>Member</option>
-                                <option value="officer" ${p.role === 'officer' ? 'selected' : ''}>Officer</option>
-                                <option value="admin" ${p.role === 'admin' ? 'selected' : ''}>Admin</option>
-                            </select>
-                            <select class="hq-status-select" data-id="${p.id}" style="width:auto; padding:4px 8px; background:#1f1815; border:1px solid #332520; border-radius:4px; color:#f0e6dc; margin-left:4px;">
-                                <option value="active" ${p.status === 'active' ? 'selected' : ''}>Active</option>
-                                <option value="inactive" ${p.status === 'inactive' ? 'selected' : ''}>Inactive</option>
-                                <option value="suspended" ${p.status === 'suspended' ? 'selected' : ''}>Suspended</option>
-                            </select>
-                            <button class="btn btn-sm btn-gold hq-update-member" data-id="${p.id}" style="margin-left:6px; min-width:auto; padding:4px 12px;"><span class="spinner"></span><span class="btn-text">Update</span></button>
-                        </td>
-                    </tr>`;
-                });
-                html += '</tbody></table></div>';
-                container.innerHTML = html;
+  // Attach change events to selects
+  document.querySelectorAll('.member-update-select').forEach(sel => {
+    sel.addEventListener('change', async function(){
+      const memberId = this.dataset.member;
+      const field = this.dataset.field;
+      const value = this.value;
+      // Disable the select temporarily
+      this.disabled = true;
+      try {
+        const { error } = await sb.from('profiles').update({ [field]: value }).eq('id', memberId);
+        if(error) throw error;
+        showToast('Member updated.', 'success');
+      } catch(err){
+        showToast('Update failed: ' + err.message, 'error');
+      }
+      this.disabled = false;
+    });
+  });
+}
 
-                container.querySelectorAll('.hq-update-member').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const id = btn.dataset.id;
-                        setLoading(btn, true);
-                        const row = btn.closest('tr');
-                        const role = row.querySelector('.hq-role-select').value;
-                        const status = row.querySelector('.hq-status-select').value;
-                        const { error } = await supabase
-                            .from('profiles')
-                            .update({ role, status })
-                            .eq('id', id);
-                        setLoading(btn, false);
-                        if (error) showToast(error.message, 'error');
-                        else { showToast('Member updated.', 'success');
-                            loadHQMembers(); }
-                    });
-                });
-            } catch (err) {
-                container.innerHTML = `<p class="text-red">${err.message}</p>`;
-            }
-        }
+// ========== EVENTS ==========
+async function createEvent(e){
+  e.preventDefault();
+  const btn = document.getElementById('hq-event-btn');
+  setLoading(btn, true);
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    const { error } = await sb.from('events').insert({
+      title: document.getElementById('ev-title').value.trim(),
+      type: document.getElementById('ev-type').value,
+      event_date: document.getElementById('ev-date').value,
+      event_time: document.getElementById('ev-time').value,
+      description: document.getElementById('ev-desc').value.trim(),
+      created_by: user.id
+    });
+    if(error) throw error;
+    showToast('Event created.', 'success');
+    e.target.reset();
+    loadEventsHQ();
+  } catch(err){
+    showToast(err.message, 'error');
+  }
+  setLoading(btn, false);
+}
 
-        // ---- HQ EVENTS (Officer/Admin) ----
-        document.getElementById('hqEventForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('hqEventBtn');
-            setLoading(btn, true);
-            try {
-                const title = document.getElementById('hqEventTitle').value.trim();
-                const type = document.getElementById('hqEventType').value;
-                const date = document.getElementById('hqEventDate').value;
-                const time = document.getElementById('hqEventTime').value;
-                const description = document.getElementById('hqEventDesc').value.trim();
-                if (!title || !date || !time) throw new Error('Title, date, and time required.');
-                const { error } = await supabase.from('events').insert({
-                    title,
-                    type,
-                    event_date: date,
-                    event_time: time,
-                    description,
-                    created_by: currentUser.id,
-                });
-                if (error) throw error;
-                showToast('Event created!', 'success');
-                document.getElementById('hqEventForm').reset();
-                loadHQEvents();
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-            setLoading(btn, false);
-        });
+async function loadEventsHQ(){
+  const list = document.getElementById('events-list');
+  list.innerHTML = `<div class="empty">Loading...</div>`;
+  const { data: events } = await sb.from('events').select('*').order('event_date', { ascending:false }).limit(20);
+  if(!events || !events.length){
+    list.innerHTML = `<div class="empty">No events yet.</div>`;
+    return;
+  }
+  list.innerHTML = events.map(ev => `
+    <div class="list-card">
+      <div class="info">
+        <h4>${ev.title} <span class="badge officer">${ev.type}</span></h4>
+        <p>${ev.event_date} at ${ev.event_time} · ${ev.status}<br>${ev.description || ''}</p>
+      </div>
+    </div>
+  `).join('');
+}
 
-        async function loadHQEvents() {
-            const container = document.getElementById('hqEventsList');
-            container.innerHTML = '<div class="skeleton" style="height:60px;"></div>';
-            try {
-                const { data, error } = await supabase
-                    .from('events')
-                    .select('*')
-                    .order('event_date', { ascending: false });
-                if (error) throw error;
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-muted">No events created.</p>';
-                    return;
-                }
-                let html = `<div class="table-wrap"><table><thead><tr><th>Title</th><th>Type</th><th>Date</th><th>Status</th><th>Attend</th></tr></thead><tbody>`;
-                for (const ev of data) {
-                    // Count confirmed & checked-in
-                    const { count: confirmed } = await supabase
-                        .from('attendance')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('event_id', ev.id)
-                        .eq('status', 'confirmed');
-                    const { count: checkedIn } = await supabase
-                        .from('attendance')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('event_id', ev.id)
-                        .eq('status', 'checked_in');
-                    html += `<tr>
-                        <td><strong>${ev.title}</strong></td>
-                        <td><span class="badge">${ev.type}</span></td>
-                        <td>${ev.event_date} ${ev.event_time}</td>
-                        <td><span class="badge">${ev.status || 'upcoming'}</span></td>
-                        <td>${confirmed || 0} confirmed / ${checkedIn || 0} checked in</td>
-                    </tr>`;
-                }
-                html += '</tbody></table></div>';
-                container.innerHTML = html;
-            } catch (err) {
-                container.innerHTML = `<p class="text-red">${err.message}</p>`;
-            }
-        }
+// ========== ANNOUNCEMENTS ==========
+async function postAnnouncement(e){
+  e.preventDefault();
+  const btn = document.getElementById('hq-announce-btn');
+  setLoading(btn, true);
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    const { error } = await sb.from('announcements').insert({
+      title: document.getElementById('an-title').value.trim(),
+      content: document.getElementById('an-content').value.trim(),
+      author: user.id
+    });
+    if(error) throw error;
+    showToast('Announcement posted.', 'success');
+    e.target.reset();
+    loadAnnouncementsHQ();
+  } catch(err){
+    showToast(err.message, 'error');
+  }
+  setLoading(btn, false);
+}
 
-        // ---- HQ ANNOUNCEMENTS ----
-        document.getElementById('hqAnnounceForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('hqAnnBtn');
-            setLoading(btn, true);
-            try {
-                const title = document.getElementById('hqAnnTitle').value.trim();
-                const content = document.getElementById('hqAnnContent').value.trim();
-                if (!title || !content) throw new Error('Title and content required.');
-                const { error } = await supabase.from('announcements').insert({
-                    title,
-                    content,
-                    author: currentUser.id,
-                });
-                if (error) throw error;
-                showToast('Announcement posted!', 'success');
-                document.getElementById('hqAnnounceForm').reset();
-                loadHQAnnouncements();
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-            setLoading(btn, false);
-        });
+async function loadAnnouncementsHQ(){
+  const list = document.getElementById('hq-announcements-list');
+  list.innerHTML = `<div class="empty">Loading...</div>`;
+  const { data: anns } = await sb.from('announcements').select('*').order('created_at', { ascending:false }).limit(20);
+  if(!anns || !anns.length){
+    list.innerHTML = `<div class="empty">No announcements yet.</div>`;
+    return;
+  }
+  list.innerHTML = anns.map(a => `
+    <div class="list-card">
+      <div class="info"><h4>${a.title}</h4><p>${a.content}</p></div>
+    </div>
+  `).join('');
+}
 
-        async function loadHQAnnouncements() {
-            const container = document.getElementById('hqAnnounceList');
-            container.innerHTML = '<div class="skeleton" style="height:60px;"></div>';
-            try {
-                const { data, error } = await supabase
-                    .from('announcements')
-                    .select('*, profiles(username)')
-                    .order('created_at', { ascending: false });
-                if (error) throw error;
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-muted">No announcements.</p>';
-                    return;
-                }
-                let html = '';
-                data.forEach(a => {
-                    html += `
-                        <div style="background:#1a1210; padding:12px 16px; border-radius:8px; margin-bottom:8px; border-left:3px solid #f1c40f;">
-                            <strong>${a.title}</strong>
-                            <span class="text-muted" style="font-size:0.8rem; margin-left:12px;">by ${a.profiles?.username || 'Unknown'}</span>
-                            <p style="margin-top:4px; color:#b0a89c;">${a.content}</p>
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
-            } catch (err) {
-                container.innerHTML = `<p class="text-red">${err.message}</p>`;
-            }
-        }
+// ========== ACTIVATION KEYS ==========
+async function generateRawKey(){
+  const btn = document.getElementById('hq-generate-key-btn');
+  setLoading(btn, true);
+  try {
+    const { data, error } = await sb.from('activation_keys').insert({}).select().single();
+    if(error) throw error;
+    showToast(`Generated: ${data.key}`, 'success');
+    loadKeys();
+  } catch(err){
+    showToast(err.message, 'error');
+  }
+  setLoading(btn, false);
+}
 
-        // ---- HQ ACTIVATION KEYS (Admin only) ----
-        document.getElementById('hqGenKeyBtn').addEventListener('click', async () => {
-            const btn = document.getElementById('hqGenKeyBtn');
-            setLoading(btn, true);
-            try {
-                const { data, error } = await supabase
-                    .from('activation_keys')
-                    .insert({ expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() })
-                    .select('key')
-                    .single();
-                if (error) throw error;
-                showToast(`New key: ${data.key}`, 'success');
-                loadHQKeys();
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-            setLoading(btn, false);
-        });
+async function loadKeys(){
+  const list = document.getElementById('keys-list');
+  list.innerHTML = `<div class="empty">Loading...</div>`;
+  const { data: keys } = await sb.from('activation_keys').select('*').order('created_at', { ascending:false }).limit(30);
+  if(!keys || !keys.length){
+    list.innerHTML = `<div class="empty">No keys generated yet.</div>`;
+    return;
+  }
+  list.innerHTML = keys.map(k => `
+    <div class="list-card">
+      <div class="info">
+        <h4><span class="key-chip">${k.key}</span> <span class="badge ${k.used?'admin':'officer'}">${k.used ? 'used' : 'unused'}</span></h4>
+        <p>Expires ${new Date(k.expires_at).toLocaleDateString()}</p>
+      </div>
+    </div>
+  `).join('');
+}
 
-        async function loadHQKeys() {
-            const container = document.getElementById('hqKeysContainer');
-            container.innerHTML = '<div class="skeleton" style="height:60px;"></div>';
-            if (currentProfile?.role !== 'admin') {
-                container.innerHTML = '<p class="text-red">Admin access required.</p>';
-                return;
-            }
-            try {
-                const { data, error } = await supabase
-                    .from('activation_keys')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(50);
-                if (error) throw error;
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-muted">No keys generated.</p>';
-                    return;
-                }
-                let html =
-                    `<div class="table-wrap"><table><thead><tr><th>Key</th><th>Used</th><th>Expires</th></tr></thead><tbody>`;
-                data.forEach(k => {
-                    html += `<tr>
-                        <td><code style="background:#1f1815; padding:2px 8px; border-radius:4px;">${k.key}</code></td>
-                        <td>${k.used ? '✅ Used' : '🟢 Available'}</td>
-                        <td>${new Date(k.expires_at).toLocaleDateString()}</td>
-                    </tr>`;
-                });
-                html += '</tbody></table></div>';
-                container.innerHTML = html;
-            } catch (err) {
-                container.innerHTML = `<p class="text-red">${err.message}</p>`;
-            }
-        }
-
-        // ============================================================
-        // INIT
-        // ============================================================
-        async function init() {
-            // Check current session
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-                currentUser = session.user;
-                await fetchProfile();
-                renderNav();
-                if (currentProfile) {
-                    navigateTo('dashboard');
-                    loadDashboard();
-                } else {
-                    navigateTo('landing');
-                }
-            } else {
-                renderNav();
-                navigateTo('landing');
-            }
-            initHQTabs();
-            // Pre-fill today's date for event form
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('hqEventDate').value = today;
-            // Set default country
-            document.getElementById('applyCountry').value = 'Nigeria';
-        }
-
-        init();
-    </script>
+// ========== INIT ==========
+(async function init(){
+  const { data: { session } } = await sb.auth.getSession();
+  currentSession = session;
+  if(currentSession) await ensureProfile();
+  renderNav();
+  loadStats();
+  route();
+})();
+</script>
 </body>
 </html>
