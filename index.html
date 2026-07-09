@@ -133,7 +133,12 @@
     -webkit-background-clip:text;background-clip:text;color:transparent;
   }
 
-  .sidebar-nav{flex:1;padding:16px 0;}
+  /* FIX: Vertical sidebar navigation */
+  .sidebar-nav{
+    flex:1;padding:16px 0;
+    display:flex;
+    flex-direction:column;
+  }
   .sidebar-nav a{
     display:flex;align-items:center;gap:12px;padding:12px 20px;
     color:var(--muted);font-size:14px;font-weight:500;
@@ -144,7 +149,10 @@
   .sidebar-nav a .icon{font-size:18px;width:28px;text-align:center;}
   .sidebar-nav a.active{color:var(--gold);background:rgba(240,169,58,0.08);border-right:3px solid var(--gold);}
 
-  .sidebar-footer{padding:16px 20px;border-top:1px solid var(--line);}
+  .sidebar-footer{
+    padding:16px 20px;border-top:1px solid var(--line);
+    display:block;
+  }
   .sidebar-footer button{
     display:flex;align-items:center;gap:12px;padding:10px 0;
     color:var(--red-bright);font-size:14px;background:none;border:none;
@@ -332,7 +340,7 @@
   <nav class="sidebar-nav" id="sidebarNav">
     <!-- Filled by JS -->
   </nav>
-  <div class="sidebar-footer">
+  <div class="sidebar-footer" id="sidebarFooter">
     <button id="sidebarLogout"><span>🚪</span> Logout</button>
   </div>
 </div>
@@ -710,6 +718,8 @@ document.getElementById('hamburgerBtn').addEventListener('click', () => {
 // ========== SIDEBAR NAV ==========
 function renderSidebar(){
   const nav = document.getElementById('sidebarNav');
+  const footer = document.getElementById('sidebarFooter');
+  
   if(currentSession){
     const isStaff = currentProfile && (currentProfile.role === 'officer' || currentProfile.role === 'admin');
     nav.innerHTML = `
@@ -718,6 +728,7 @@ function renderSidebar(){
       <a href="#events" data-view="events"><span class="icon">📅</span> Events</a>
       ${isStaff ? `<a href="#hq" data-view="hq"><span class="icon">📢</span> HQ</a>` : ''}
     `;
+    footer.style.display = 'block';
     const hash = location.hash.replace('#','') || 'dashboard';
     nav.querySelectorAll('a').forEach(a => {
       a.classList.toggle('active', a.dataset.view === hash);
@@ -728,7 +739,9 @@ function renderSidebar(){
       <a href="#activate" data-view="activate"><span class="icon">🔑</span> Activate</a>
       <a href="#login" data-view="login"><span class="icon">🔐</span> Login</a>
     `;
+    footer.style.display = 'none';
   }
+  
   nav.querySelectorAll('a').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
