@@ -41,8 +41,7 @@
   nav{
     display:flex;
     align-items:center;
-    justify-content:flex-start;
-    gap:20px;
+    justify-content:space-between;
     padding:14px 24px;
     border-bottom:1px solid var(--line);
     position:sticky;
@@ -66,7 +65,7 @@
 
   .navlinks{
     display:flex;
-    gap:4px;
+    gap:4px;  /* FIXED: Reduced from 8px to bring items closer */
     align-items:center;
   }
   .navlinks a, .navlinks button{
@@ -76,7 +75,7 @@
     letter-spacing:0.03em;
     text-transform:uppercase;
     color:var(--muted);
-    padding:8px 14px;
+    padding:8px 12px;  /* FIXED: Reduced from 9px 16px */
     border:1px solid transparent;
     background:none;
     cursor:pointer;
@@ -86,7 +85,7 @@
   .navlinks a:hover, .navlinks button:hover{color:var(--white);border-color:var(--line);}
   .navlinks .cta{color:var(--white);background:var(--panel-2);border-color:var(--line);}
 
-  .nav-right{margin-left:auto;display:flex;align-items:center;gap:12px;position:relative;}
+  .nav-right{display:flex;align-items:center;gap:12px;position:relative;}
 
   /* Avatar Button */
   .avatar-btn{
@@ -129,6 +128,70 @@
   .drop-item .icon{font-size:14px;width:22px;text-align:center;}
   .drop-item.danger{color:var(--red-bright);}
   .drop-item.danger:hover{background:rgba(224,50,42,0.12);}
+
+  /* ========== SIDEBAR ========== */
+  .sidebar-overlay{
+    display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+    background:rgba(0,0,0,0.6);z-index:300;backdrop-filter:blur(3px);
+  }
+  .sidebar-overlay.open{display:block;}
+
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-width);
+    background:var(--bg);border-right:1px solid var(--line);
+    transform:translateX(-100%);transition:transform .3s cubic-bezier(0.16,1,0.3,1);
+    z-index:400;padding:20px 0;display:flex;flex-direction:column;
+  }
+  .sidebar.open{transform:translateX(0);}
+
+  .sidebar-brand{
+    padding:0 20px 20px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:10px;
+  }
+  .sidebar-brand .brand-text{
+    font-family:'Orbitron',sans-serif;font-weight:700;font-size:16px;
+    background:linear-gradient(135deg,var(--gold) 30%,var(--red-bright) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+
+  .sidebar-nav{
+    flex:1;padding:16px 0;
+    display:flex;
+    flex-direction:column;
+  }
+  .sidebar-nav a{
+    display:flex;align-items:center;gap:12px;padding:12px 20px;
+    color:var(--muted);font-size:14px;font-weight:500;
+    transition:background .15s,color .15s;border:none;background:none;
+    width:100%;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;
+  }
+  .sidebar-nav a:hover{background:var(--panel-2);color:var(--white);}
+  .sidebar-nav a .icon{font-size:18px;width:28px;text-align:center;}
+  .sidebar-nav a.active{color:var(--gold);background:rgba(240,169,58,0.08);border-right:3px solid var(--gold);}
+
+  .sidebar-footer{
+    padding:16px 20px;border-top:1px solid var(--line);
+    display:block;
+  }
+  .sidebar-footer button{
+    display:flex;align-items:center;gap:12px;padding:10px 0;
+    color:var(--red-bright);font-size:14px;background:none;border:none;
+    cursor:pointer;width:100%;text-align:left;font-family:'Inter',sans-serif;
+  }
+  .sidebar-footer button:hover{color:#ff6b66;}
+
+  /* ========== HAMBURGER ========== */
+  .hamburger{
+    display:none;flex-direction:column;gap:5px;cursor:pointer;
+    padding:6px 4px;background:none;border:none;
+  }
+  .hamburger span{
+    display:block;width:26px;height:2px;background:var(--white);
+    transition:all .3s;border-radius:2px;
+  }
+  .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+  .hamburger.open span:nth-child(2){opacity:0;}
+  .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
   /* ========== LAYOUT ========== */
   .view{display:none;}
@@ -277,22 +340,19 @@
 
   /* ========== RESPONSIVE ========== */
   @media (max-width:760px){
+    .hamburger{display:flex;}
+    .navlinks{display:none;}
+    .navlinks.mobile-open{display:flex;flex-direction:column;position:absolute;top:60px;left:0;right:0;background:var(--bg);padding:16px 20px;border-bottom:1px solid var(--line);gap:8px;}
     .stats{grid-template-columns:repeat(2,1fr);}
     .stat:nth-child(2){border-right:none;}
     .dash-grid{grid-template-columns:1fr;}
-    .navlinks{gap:2px;}
-    .navlinks a, .navlinks button{padding:6px 10px;font-size:10px;}
-    .brand-text{font-size:13px;}
-    .brand-logo{width:26px;height:26px;}
-    nav{padding:10px 16px;gap:10px;}
     .stats-grid{grid-template-columns:1fr 1fr;}
   }
   @media (max-width:480px){
-    .brand-text{font-size:11px;}
-    .brand-logo{width:22px;height:22px;}
-    .avatar-btn{width:30px;height:30px;font-size:14px;}
-    nav{padding:8px 12px;gap:8px;}
-    .navlinks a, .navlinks button{padding:4px 8px;font-size:9px;}
+    .brand-text{font-size:13px;}
+    .brand-logo{width:26px;height:26px;}
+    .avatar-btn{width:32px;height:32px;font-size:14px;}
+    nav{padding:10px 16px;}
     .panel{padding:20px 16px;}
   }
 </style>
@@ -302,14 +362,36 @@
 <!-- ========== TOAST ========== -->
 <div id="toast-container"></div>
 
+<!-- ========== SIDEBAR OVERLAY ========== -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ========== SIDEBAR ========== -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <span style="font-size:24px;">☰</span>
+    <span class="brand-text">DEADSHOT Guild</span>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <!-- Filled by JS -->
+  </nav>
+  <div class="sidebar-footer" id="sidebarFooter">
+    <button id="sidebarLogout"><span>🚪</span> Logout</button>
+  </div>
+</div>
+
 <!-- ========== NAV ========== -->
 <nav>
   <div class="brand">
     <img src="logo.png" alt="DEADSHOT" class="brand-logo" onerror="this.style.display='none'">
     <span class="brand-text">DEADSHOT</span>
   </div>
-  <div class="navlinks" id="navlinks"></div>
+  <div class="navlinks" id="navlinks">
+    <!-- Filled by JS -->
+  </div>
   <div class="nav-right">
+    <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
     <button class="avatar-btn" id="avatarBtn" aria-label="User menu">
       <span id="avatarDisplay">👤</span>
     </button>
@@ -603,6 +685,7 @@ const views = ['login','apply','activate','dashboard','members','events','profil
 function showView(name){
   views.forEach(v => document.getElementById('view-'+v).classList.toggle('active', v === name));
   window.scrollTo(0,0);
+  closeSidebar();
 }
 
 async function ensureProfile(){
@@ -612,6 +695,60 @@ async function ensureProfile(){
   const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
   currentProfile = profile;
   return profile;
+}
+
+// ========== SIDEBAR ==========
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+  document.getElementById('hamburgerBtn').classList.add('open');
+}
+
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.getElementById('hamburgerBtn').classList.remove('open');
+}
+
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+document.getElementById('hamburgerBtn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.contains('open') ? closeSidebar() : openSidebar();
+});
+
+// ========== SIDEBAR NAV ==========
+function renderSidebar(){
+  const nav = document.getElementById('sidebarNav');
+  const footer = document.getElementById('sidebarFooter');
+  
+  if(currentSession){
+    const isStaff = currentProfile && (currentProfile.role === 'officer' || currentProfile.role === 'admin');
+    nav.innerHTML = `
+      <a href="#dashboard" data-view="dashboard"><span class="icon">📊</span> Dashboard</a>
+      <a href="#members" data-view="members"><span class="icon">👥</span> Members</a>
+      <a href="#events" data-view="events"><span class="icon">📅</span> Events</a>
+      ${isStaff ? `<a href="#hq" data-view="hq"><span class="icon">📢</span> HQ</a>` : ''}
+    `;
+    footer.style.display = 'block';
+    const hash = location.hash.replace('#','') || 'dashboard';
+    nav.querySelectorAll('a').forEach(a => {
+      a.classList.toggle('active', a.dataset.view === hash);
+    });
+  } else {
+    nav.innerHTML = `
+      <a href="#apply" data-view="apply"><span class="icon">📝</span> Apply</a>
+      <a href="#activate" data-view="activate"><span class="icon">🔑</span> Activate</a>
+      <a href="#login" data-view="login"><span class="icon">🔐</span> Login</a>
+    `;
+    footer.style.display = 'none';
+  }
+  
+  nav.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      location.hash = '#' + a.dataset.view;
+      closeSidebar();
+    });
+  });
 }
 
 // ========== NAV ==========
@@ -636,6 +773,7 @@ function updateNavbar(){
     dropRole.style.color = currentProfile.role === 'admin' ? '#ff6b66' : (currentProfile.role === 'officer' ? '#f0a93a' : '#948a86');
     document.querySelectorAll('.drop-item').forEach(el => el.style.display = 'flex');
     document.getElementById('dropLogout').style.display = 'flex';
+    document.getElementById('sidebarLogout').style.display = 'flex';
   } else {
     avatarDisplay.textContent = '👤';
     dropAvatar.textContent = '👤';
@@ -644,6 +782,7 @@ function updateNavbar(){
     dropRole.style.color = '#948a86';
     document.querySelectorAll('.drop-item').forEach(el => el.style.display = 'none');
     document.getElementById('dropLogout').style.display = 'none';
+    document.getElementById('sidebarLogout').style.display = 'none';
   }
 }
 
@@ -690,6 +829,7 @@ document.getElementById('dropChangePassword').addEventListener('click', () => {
   setTimeout(() => { document.getElementById('new-password').focus(); }, 300);
 });
 document.getElementById('dropLogout').addEventListener('click', doLogout);
+document.getElementById('sidebarLogout').addEventListener('click', doLogout);
 
 // ========== NAVIGATION ==========
 async function route(){
@@ -719,17 +859,19 @@ async function route(){
     }
     showView('hq');
     initHQ();
+    renderSidebar();
     renderNav();
     updateNavbar();
     return;
   }
 
-  if(hash === 'dashboard'){ await loadDashboard(); showView('dashboard'); renderNav(); updateNavbar(); return; }
-  if(hash === 'members'){ loadMembersView(); showView('members'); renderNav(); updateNavbar(); return; }
-  if(hash === 'events'){ loadEventsView(); showView('events'); renderNav(); updateNavbar(); return; }
-  if(hash === 'profile'){ loadProfileForm(); showView('profile'); renderNav(); updateNavbar(); return; }
+  if(hash === 'dashboard'){ await loadDashboard(); showView('dashboard'); renderSidebar(); renderNav(); updateNavbar(); return; }
+  if(hash === 'members'){ loadMembersView(); showView('members'); renderSidebar(); renderNav(); updateNavbar(); return; }
+  if(hash === 'events'){ loadEventsView(); showView('events'); renderSidebar(); renderNav(); updateNavbar(); return; }
+  if(hash === 'profile'){ loadProfileForm(); showView('profile'); renderSidebar(); renderNav(); updateNavbar(); return; }
 
   showView(hash);
+  renderSidebar();
   renderNav();
   updateNavbar();
 }
@@ -896,6 +1038,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     currentSession = data.session;
     currentProfile = null;
     await ensureProfile();
+    renderSidebar();
     renderNav();
     updateNavbar();
     location.hash = '#dashboard';
@@ -909,9 +1052,11 @@ async function doLogout(){
   await sb.auth.signOut();
   currentSession = null;
   currentProfile = null;
+  renderSidebar();
   renderNav();
   updateNavbar();
   location.hash = '#login';
+  closeSidebar();
   showToast('Logged out.', 'warning');
 }
 
@@ -1429,12 +1574,14 @@ sb.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
     currentSession = session;
     await ensureProfile();
+    renderSidebar();
     renderNav();
     updateNavbar();
     route();
   } else if (event === 'SIGNED_OUT') {
     currentSession = null;
     currentProfile = null;
+    renderSidebar();
     renderNav();
     updateNavbar();
     location.hash = '#login';
@@ -1447,6 +1594,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
   const { data: { session } } = await sb.auth.getSession();
   currentSession = session;
   if(currentSession) await ensureProfile();
+  renderSidebar();
   renderNav();
   updateNavbar();
   route();
