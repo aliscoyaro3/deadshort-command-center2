@@ -157,23 +157,6 @@
   .view.active{display:block;}
   .wrap{max-width:1080px;margin:0 auto;padding:0 20px;}
 
-  /* ========== HERO ========== */
-  .hero{padding:80px 20px 60px;text-align:center;position:relative;overflow:hidden;}
-  .hero::before{
-    content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
-    width:700px;height:700px;background:radial-gradient(circle, rgba(224,50,42,0.22) 0%, rgba(240,169,58,0.08) 40%, transparent 65%);
-    pointer-events:none;
-  }
-  .eyebrow{font-family:'Orbitron',sans-serif;font-weight:600;color:var(--gold);letter-spacing:0.2em;font-size:11px;margin-bottom:16px;}
-  .hero h1{font-size:64px;line-height:0.95;font-weight:700;margin-bottom:6px;position:relative;}
-  .hero h1 .grad-text{
-    background:linear-gradient(135deg,var(--gold) 20%,var(--red-bright) 100%);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    filter:drop-shadow(0 0 24px rgba(224,50,42,0.35));
-  }
-  .hero p{color:var(--muted);font-size:16px;max-width:500px;margin:18px auto 30px;line-height:1.6;}
-  .hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
-
   /* ========== BUTTONS ========== */
   .btn{
     font-family:'Orbitron',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.02em;
@@ -200,31 +183,15 @@
   .stat .num{font-family:'Orbitron',sans-serif;font-weight:700;font-size:28px;color:var(--gold);}
   .stat .lbl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;}
 
-  /* ========== SECTIONS ========== */
-  .section{padding:60px 20px;}
-  .section-head{margin-bottom:32px;}
-  .section-head .eyebrow{margin-bottom:6px;}
-  .section-head h2{font-size:30px;}
-
-  .roles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
-  .role-card{
-    background:var(--panel);border:1px solid var(--line);padding:22px 18px;
-    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
-    transition:border-color .15s;
-  }
-  .role-card:hover{border-color:var(--gold-dim);}
-  .role-card .tag{color:var(--gold);font-family:'Orbitron',sans-serif;font-weight:700;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;display:block;}
-  .role-card h3{font-size:18px;margin-bottom:8px;}
-  .role-card p{color:var(--muted);font-size:13px;line-height:1.5;}
-
   /* ========== PANELS ========== */
   .center-panel{display:flex;align-items:center;justify-content:center;min-height:70vh;padding:30px 16px;}
   .panel{
-    width:100%;max-width:440px;background:var(--panel);border:1px solid var(--line);
-    padding:30px 28px;clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);
+    width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);
+    padding:32px 28px;clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);
   }
-  .panel h2{font-size:24px;margin-bottom:4px;}
-  .panel .sub{color:var(--muted);font-size:13px;margin-bottom:22px;}
+  .panel h2{font-size:26px;margin-bottom:4px;text-align:center;}
+  .panel .sub{color:var(--muted);font-size:13px;margin-bottom:22px;text-align:center;}
+  .panel .guild-tag{text-align:center;margin-bottom:16px;font-family:'Orbitron',sans-serif;font-size:10px;color:var(--gold);letter-spacing:0.15em;text-transform:uppercase;}
   .field{margin-bottom:14px;}
   .field label{display:block;font-family:'Orbitron',sans-serif;font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:4px;}
   .field input,.field select,.field textarea{
@@ -332,25 +299,19 @@
 
   /* ========== RESPONSIVE ========== */
   @media (max-width:760px){
-    .hero h1{font-size:40px;}
     .stats{grid-template-columns:repeat(2,1fr);}
     .stat:nth-child(2){border-right:none;}
-    .roles{grid-template-columns:1fr 1fr;}
     .dash-grid{grid-template-columns:1fr;}
     .nav-left .brand-text{font-size:13px;}
-    .section{padding:40px 16px;}
-    .hero{padding:60px 16px 40px;}
-    .panel{padding:24px 20px;}
     .sidebar{width:260px;}
     .stats-grid{grid-template-columns:1fr 1fr;}
   }
   @media (max-width:480px){
-    .hero h1{font-size:32px;}
-    .roles{grid-template-columns:1fr;}
     .brand-text{font-size:11px;}
     .brand-logo{width:24px;height:24px;}
     .avatar-btn{width:32px;height:32px;font-size:14px;}
     nav{padding:10px 14px;}
+    .panel{padding:24px 18px;}
   }
 </style>
 </head>
@@ -408,33 +369,20 @@
 
 <!-- ========== VIEWS ========== -->
 
-<!-- LANDING -->
-<section class="view" id="view-landing">
-  <div class="hero">
-    <div class="eyebrow">Free Fire Guild</div>
-    <h1><span class="grad-text">DEADSHOT</span> GUILD<br>COMMAND CENTER</h1>
-    <p>The official headquarters for DeadShot Guild. Members, events, attendance, and rank — all in one place.</p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="#apply">Apply To Join</a>
-      <a class="btn btn-ghost" href="#login">Member Login</a>
-    </div>
-  </div>
-  <div class="stats">
-    <div class="stat"><div class="num" id="stat-members">—</div><div class="lbl">Members</div></div>
-    <div class="stat"><div class="num" id="stat-events">—</div><div class="lbl">Events</div></div>
-    <div class="stat"><div class="num">4</div><div class="lbl">Rank Tiers</div></div>
-    <div class="stat"><div class="num">24/7</div><div class="lbl">Command Access</div></div>
-  </div>
-  <div class="section wrap">
-    <div class="section-head">
-      <div class="eyebrow">How it works</div>
-      <h2>Built for squads, not open signups</h2>
-    </div>
-    <div class="roles">
-      <div class="role-card"><span class="tag">01 · Visitor</span><h3>Apply</h3><p>Submit your Free Fire UID and tell us about yourself.</p></div>
-      <div class="role-card"><span class="tag">02 · Member</span><h3>Activate</h3><p>Approved applicants get a one-time activation key to register.</p></div>
-      <div class="role-card"><span class="tag">03 · Officer</span><h3>Manage</h3><p>Officers run events, approve attendance, and review applications.</p></div>
-      <div class="role-card"><span class="tag">04 · Admin</span><h3>Command</h3><p>Full control over members, ranks, applications, and guild settings.</p></div>
+<!-- LOGIN (default for guests) -->
+<section class="view" id="view-login">
+  <div class="center-panel">
+    <div class="panel">
+      <div class="guild-tag">⚔️ DeadShot Guild</div>
+      <h2>Member Login</h2>
+      <div class="sub">Access your guild command center.</div>
+      <div class="msg" id="login-msg"></div>
+      <form id="login-form">
+        <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="your@email.com" required></div>
+        <div class="field"><label>Password</label><input type="password" id="login-password" placeholder="Enter your password" required></div>
+        <button class="btn btn-primary btn-block" type="submit" id="login-btn"><span class="spinner"></span><span class="btn-text">Log In</span></button>
+      </form>
+      <div class="switch-link">New? <a href="#apply">Apply to join</a> · Have a key? <a href="#activate">Activate account</a></div>
     </div>
   </div>
 </section>
@@ -443,6 +391,7 @@
 <section class="view" id="view-apply">
   <div class="center-panel">
     <div class="panel">
+      <div class="guild-tag">⚔️ DeadShot Guild</div>
       <h2>Apply to Join</h2>
       <div class="sub">Fill out the form below. Officers review every application.</div>
       <div class="msg" id="apply-msg"></div>
@@ -486,6 +435,7 @@
         <div class="field"><label>Experience</label><textarea id="apply-exp" placeholder="Previous guilds, rank, playstyle..."></textarea></div>
         <button class="btn btn-primary btn-block" type="submit" id="apply-btn"><span class="spinner"></span><span class="btn-text">Submit Application</span></button>
       </form>
+      <div class="switch-link">Already have an account? <a href="#login">Log in</a></div>
     </div>
   </div>
 </section>
@@ -494,6 +444,7 @@
 <section class="view" id="view-activate">
   <div class="center-panel">
     <div class="panel">
+      <div class="guild-tag">⚔️ DeadShot Guild</div>
       <h2>Activate Account</h2>
       <div class="sub">Enter the one-time activation key given to you by an officer.</div>
       <div class="msg" id="activate-msg"></div>
@@ -513,24 +464,7 @@
   </div>
 </section>
 
-<!-- LOGIN -->
-<section class="view" id="view-login">
-  <div class="center-panel">
-    <div class="panel">
-      <h2>Member Login</h2>
-      <div class="sub">Access your guild dashboard.</div>
-      <div class="msg" id="login-msg"></div>
-      <form id="login-form">
-        <div class="field"><label>Email</label><input type="email" id="login-email" required></div>
-        <div class="field"><label>Password</label><input type="password" id="login-password" required></div>
-        <button class="btn btn-primary btn-block" type="submit" id="login-btn"><span class="spinner"></span><span class="btn-text">Log In</span></button>
-      </form>
-      <div class="switch-link">Have an activation key? <a href="#activate">Activate account</a></div>
-    </div>
-  </div>
-</section>
-
-<!-- DASHBOARD -->
+<!-- DASHBOARD (default for logged-in) -->
 <section class="view" id="view-dashboard">
   <div class="section wrap">
     <div class="dash-head">
@@ -549,7 +483,7 @@
   </div>
 </section>
 
-<!-- MEMBERS (formerly Roster) -->
+<!-- MEMBERS -->
 <section class="view" id="view-members">
   <div class="section wrap">
     <div class="dash-head">
@@ -559,7 +493,7 @@
   </div>
 </section>
 
-<!-- EVENTS (Member View) -->
+<!-- EVENTS -->
 <section class="view" id="view-events">
   <div class="section wrap">
     <div class="dash-head">
@@ -703,7 +637,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentSession = null;
 let currentProfile = null;
-const views = ['landing','apply','activate','login','dashboard','members','events','profile','hq'];
+const views = ['login','apply','activate','dashboard','members','events','profile','hq'];
 
 function showView(name){
   views.forEach(v => document.getElementById('view-'+v).classList.toggle('active', v === name));
@@ -725,11 +659,6 @@ function getAvatarDisplay(profile){
   if(!profile) return '👤';
   if(profile.avatar_url) return `<img src="${profile.avatar_url}" alt="avatar">`;
   return '👤';
-}
-
-function getInitials(profile){
-  if(!profile || !profile.username) return '?';
-  return profile.username.substring(0,2).toUpperCase();
 }
 
 function updateNavbar(){
@@ -773,19 +702,10 @@ function closeSidebar(){
   document.getElementById('hamburgerBtn').classList.remove('open');
 }
 
-function toggleSidebar(){
-  if(document.getElementById('sidebar').classList.contains('open')){
-    closeSidebar();
-  } else {
-    openSidebar();
-  }
-}
-
-// Click outside to close
 document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
-
-// Hamburger button
-document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+document.getElementById('hamburgerBtn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.contains('open') ? closeSidebar() : openSidebar();
+});
 
 // ========== SIDEBAR NAV ==========
 function renderSidebar(){
@@ -798,7 +718,6 @@ function renderSidebar(){
       <a href="#events" data-view="events"><span class="icon">📅</span> Events</a>
       ${isStaff ? `<a href="#hq" data-view="hq"><span class="icon">📢</span> HQ</a>` : ''}
     `;
-    // Highlight active
     const hash = location.hash.replace('#','') || 'dashboard';
     nav.querySelectorAll('a').forEach(a => {
       a.classList.toggle('active', a.dataset.view === hash);
@@ -810,7 +729,6 @@ function renderSidebar(){
       <a href="#login" data-view="login"><span class="icon">🔐</span> Login</a>
     `;
   }
-  // Click handlers
   nav.querySelectorAll('a').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
@@ -825,40 +743,41 @@ document.getElementById('avatarBtn').addEventListener('click', (e) => {
   e.stopPropagation();
   document.getElementById('avatarDropdown').classList.toggle('open');
 });
-
 document.addEventListener('click', () => {
   document.getElementById('avatarDropdown').classList.remove('open');
 });
 
-// Dropdown actions
 document.getElementById('dropEditProfile').addEventListener('click', () => {
   location.hash = '#profile';
   document.getElementById('avatarDropdown').classList.remove('open');
 });
-
 document.getElementById('dropChangePassword').addEventListener('click', () => {
   location.hash = '#profile';
   document.getElementById('avatarDropdown').classList.remove('open');
-  setTimeout(() => {
-    document.getElementById('new-password').focus();
-  }, 300);
+  setTimeout(() => { document.getElementById('new-password').focus(); }, 300);
 });
-
 document.getElementById('dropLogout').addEventListener('click', doLogout);
 document.getElementById('sidebarLogout').addEventListener('click', doLogout);
 
 // ========== NAVIGATION ==========
 async function route(){
-  const hash = (location.hash || '#landing').replace('#','');
-  const validViews = ['landing','apply','activate','login','dashboard','members','events','profile','hq'];
-  if(!validViews.includes(hash)) { showView('landing'); return; }
+  const hash = (location.hash || '#login').replace('#','');
+  const validViews = ['login','apply','activate','dashboard','members','events','profile','hq'];
 
-  // Check auth for protected views
+  // If user is logged in and tries to go to login/apply/activate, redirect to dashboard
+  if(currentSession && ['login','apply','activate'].includes(hash)){
+    location.hash = '#dashboard';
+    return;
+  }
+
+  // If user is not logged in and tries to go to protected views, redirect to login
   const protectedViews = ['dashboard','members','events','profile','hq'];
   if(protectedViews.includes(hash) && !currentSession){
     location.hash = '#login';
     return;
   }
+
+  if(!validViews.includes(hash)) { location.hash = '#login'; return; }
 
   if(hash === 'hq'){
     const profile = await ensureProfile();
@@ -879,7 +798,6 @@ async function route(){
 
   showView(hash);
   renderSidebar();
-  if(hash === 'landing') loadStats();
 }
 window.addEventListener('hashchange', route);
 
@@ -1059,7 +977,7 @@ async function doLogout(){
   currentProfile = null;
   renderSidebar();
   updateNavbar();
-  location.hash = '#landing';
+  location.hash = '#login';
   closeSidebar();
   showToast('Logged out.', 'warning');
 }
@@ -1208,14 +1126,6 @@ document.getElementById('password-form').addEventListener('submit', async (e) =>
   } catch(err){ showToast(err.message, 'error'); }
   setLoading(btn, false);
 });
-
-// ========== LANDING STATS ==========
-async function loadStats(){
-  const { count: memberCount } = await sb.from('profiles').select('*', { count:'exact', head:true });
-  const { count: eventCount } = await sb.from('events').select('*', { count:'exact', head:true });
-  if(memberCount !== null) document.getElementById('stat-members').textContent = memberCount;
-  if(eventCount !== null) document.getElementById('stat-events').textContent = eventCount;
-}
 
 // ========== HQ ==========
 let hqInitialized = false;
@@ -1594,7 +1504,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     currentProfile = null;
     renderSidebar();
     updateNavbar();
-    location.hash = '#landing';
+    location.hash = '#login';
   }
 });
 
@@ -1606,7 +1516,6 @@ sb.auth.onAuthStateChange(async (event, session) => {
   if(currentSession) await ensureProfile();
   renderSidebar();
   updateNavbar();
-  loadStats();
   route();
   document.getElementById('ev-date').value = new Date().toISOString().split('T')[0];
 })();
