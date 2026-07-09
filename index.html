@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
 <title>DeadShot Guild — Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -19,6 +19,7 @@
     --red-bright:#e0322a;
     --white:#f2ede0;
     --muted:#948a86;
+    --sidebar-width:280px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
@@ -29,200 +30,293 @@
       linear-gradient(180deg, rgba(224,50,42,0.05) 0%, transparent 40%),
       repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 60px);
     font-family:'Inter',sans-serif;
+    overflow-x:hidden;
   }
   h1,h2,h3,.display{font-family:'Teko',sans-serif;text-transform:uppercase;letter-spacing:0.01em;font-weight:600;}
   .hud{font-family:'Orbitron',sans-serif;}
   code, .mono{font-family:'JetBrains Mono',monospace;}
   a{color:inherit;text-decoration:none;}
 
-  /* NAV */
+  /* ========== NAV ========== */
   nav{
     display:flex;align-items:center;justify-content:space-between;
-    padding:18px 32px;border-bottom:1px solid var(--line);
-    position:sticky;top:0;background:rgba(10,10,13,0.92);backdrop-filter:blur(8px);z-index:50;
+    padding:14px 20px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;background:rgba(10,10,13,0.95);backdrop-filter:blur(10px);z-index:100;
   }
-  .brand{display:flex;align-items:center;gap:9px;font-family:'Orbitron',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.02em;}
-  .brand-logo{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(224,50,42,0.6));}
+  .nav-left{display:flex;align-items:center;gap:12px;}
+  .hamburger{
+    display:flex;flex-direction:column;gap:5px;cursor:pointer;
+    padding:6px 4px;background:none;border:none;
+  }
+  .hamburger span{
+    display:block;width:26px;height:2px;background:var(--white);
+    transition:all .3s;border-radius:2px;
+  }
+  .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+  .hamburger.open span:nth-child(2){opacity:0;}
+  .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+  .brand{display:flex;align-items:center;gap:8px;font-family:'Orbitron',sans-serif;font-weight:700;font-size:15px;letter-spacing:0.02em;}
+  .brand-logo{width:30px;height:30px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(224,50,42,0.6));}
   .brand-text{
     background:linear-gradient(135deg,var(--gold) 30%,var(--red-bright) 100%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
     text-shadow:0 0 18px rgba(240,169,58,0.25);
   }
-  .navlinks{display:flex;gap:8px;align-items:center;}
-  .navlinks a, .navlinks button{
-    font-family:'Orbitron',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.03em;
-    text-transform:uppercase;color:var(--muted);padding:9px 16px;border:1px solid transparent;
-    background:none;cursor:pointer;border-radius:3px;transition:all .15s;
-  }
-  .navlinks a:hover, .navlinks button:hover{color:var(--white);border-color:var(--line);}
-  .navlinks .cta{color:var(--white);background:var(--panel-2);border-color:var(--line);}
 
-  /* LAYOUT */
+  .nav-right{display:flex;align-items:center;gap:12px;position:relative;}
+
+  /* Avatar Button */
+  .avatar-btn{
+    width:38px;height:38px;border-radius:50%;border:2px solid var(--line);
+    background:var(--panel-2);cursor:pointer;display:flex;align-items:center;justify-content:center;
+    font-size:18px;transition:border-color .2s;overflow:hidden;
+  }
+  .avatar-btn:hover{border-color:var(--gold);}
+  .avatar-btn img{width:100%;height:100%;object-fit:cover;}
+  .avatar-btn .initials{font-family:'Orbitron',sans-serif;font-weight:700;font-size:14px;color:var(--gold);}
+
+  /* Avatar Dropdown */
+  .avatar-dropdown{
+    display:none;position:absolute;top:48px;right:0;
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    min-width:220px;padding:8px 0;box-shadow:0 12px 40px rgba(0,0,0,0.8);
+    z-index:200;backdrop-filter:blur(10px);
+  }
+  .avatar-dropdown.open{display:block;animation:fadeDrop .2s ease;}
+  @keyframes fadeDrop{0%{opacity:0;transform:translateY(-8px);}100%{opacity:1;transform:translateY(0);}}
+
+  .drop-user{
+    padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);
+  }
+  .drop-user .drop-avatar{
+    width:40px;height:40px;border-radius:50%;background:var(--panel-2);border:2px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:20px;overflow:hidden;
+  }
+  .drop-user .drop-avatar img{width:100%;height:100%;object-fit:cover;}
+  .drop-user .drop-info{display:flex;flex-direction:column;}
+  .drop-user .drop-name{font-weight:600;font-size:14px;}
+  .drop-user .drop-role{font-size:11px;color:var(--muted);font-family:'Orbitron',sans-serif;text-transform:uppercase;}
+
+  .drop-item{
+    display:flex;align-items:center;gap:10px;padding:10px 16px;
+    color:var(--muted);font-size:13px;cursor:pointer;transition:background .15s;border:none;
+    background:none;width:100%;text-align:left;font-family:'Inter',sans-serif;
+  }
+  .drop-item:hover{background:var(--panel-2);color:var(--white);}
+  .drop-item .icon{font-size:16px;width:24px;text-align:center;}
+  .drop-item.danger{color:var(--red-bright);}
+  .drop-item.danger:hover{background:rgba(224,50,42,0.12);}
+
+  /* ========== SIDEBAR ========== */
+  .sidebar-overlay{
+    display:none;position:fixed;top:0;left:0;right:0;bottom:0;
+    background:rgba(0,0,0,0.6);z-index:300;backdrop-filter:blur(3px);
+  }
+  .sidebar-overlay.open{display:block;}
+
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-width);
+    background:var(--bg);border-right:1px solid var(--line);
+    transform:translateX(-100%);transition:transform .3s cubic-bezier(0.16,1,0.3,1);
+    z-index:400;padding:20px 0;display:flex;flex-direction:column;
+  }
+  .sidebar.open{transform:translateX(0);}
+
+  .sidebar-brand{
+    padding:0 20px 20px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:10px;
+  }
+  .sidebar-brand .brand-text{
+    font-family:'Orbitron',sans-serif;font-weight:700;font-size:16px;
+    background:linear-gradient(135deg,var(--gold) 30%,var(--red-bright) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+
+  .sidebar-nav{flex:1;padding:16px 0;}
+  .sidebar-nav a{
+    display:flex;align-items:center;gap:12px;padding:12px 20px;
+    color:var(--muted);font-size:14px;font-weight:500;
+    transition:background .15s,color .15s;border:none;background:none;
+    width:100%;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;
+  }
+  .sidebar-nav a:hover{background:var(--panel-2);color:var(--white);}
+  .sidebar-nav a .icon{font-size:18px;width:28px;text-align:center;}
+  .sidebar-nav a.active{color:var(--gold);background:rgba(240,169,58,0.08);border-right:3px solid var(--gold);}
+
+  .sidebar-footer{padding:16px 20px;border-top:1px solid var(--line);}
+  .sidebar-footer button{
+    display:flex;align-items:center;gap:12px;padding:10px 0;
+    color:var(--red-bright);font-size:14px;background:none;border:none;
+    cursor:pointer;width:100%;text-align:left;font-family:'Inter',sans-serif;
+  }
+  .sidebar-footer button:hover{color:#ff6b66;}
+
+  /* ========== LAYOUT ========== */
   .view{display:none;}
   .view.active{display:block;}
-  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px;}
 
-  /* HERO */
-  .hero{padding:110px 24px 90px;text-align:center;position:relative;overflow:hidden;}
+  /* ========== HERO ========== */
+  .hero{padding:80px 20px 60px;text-align:center;position:relative;overflow:hidden;}
   .hero::before{
     content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
-    width:900px;height:900px;background:radial-gradient(circle, rgba(224,50,42,0.22) 0%, rgba(240,169,58,0.08) 40%, transparent 65%);
+    width:700px;height:700px;background:radial-gradient(circle, rgba(224,50,42,0.22) 0%, rgba(240,169,58,0.08) 40%, transparent 65%);
     pointer-events:none;
   }
-  .eyebrow{font-family:'Orbitron',sans-serif;font-weight:600;color:var(--gold);letter-spacing:0.2em;font-size:11px;margin-bottom:18px;}
-  .hero h1{font-size:76px;line-height:0.95;font-weight:700;margin-bottom:6px;position:relative;}
+  .eyebrow{font-family:'Orbitron',sans-serif;font-weight:600;color:var(--gold);letter-spacing:0.2em;font-size:11px;margin-bottom:16px;}
+  .hero h1{font-size:64px;line-height:0.95;font-weight:700;margin-bottom:6px;position:relative;}
   .hero h1 .grad-text{
     background:linear-gradient(135deg,var(--gold) 20%,var(--red-bright) 100%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
     filter:drop-shadow(0 0 24px rgba(224,50,42,0.35));
   }
-  .hero p{color:var(--muted);font-size:17px;max-width:520px;margin:22px auto 36px;line-height:1.6;}
-  .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .hero p{color:var(--muted);font-size:16px;max-width:500px;margin:18px auto 30px;line-height:1.6;}
+  .hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
 
+  /* ========== BUTTONS ========== */
   .btn{
-    font-family:'Orbitron',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.02em;
-    text-transform:uppercase;padding:14px 30px;border:none;cursor:pointer;
-    clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
+    font-family:'Orbitron',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.02em;
+    text-transform:uppercase;padding:12px 28px;border:none;cursor:pointer;
+    clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
     transition:transform .15s, box-shadow .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;
   }
-  .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#0a0705;box-shadow:0 0 0 rgba(224,50,42,0);}
-  .btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(224,50,42,0.45),0 0 20px rgba(240,169,58,0.25);}
+  .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#0a0705;}
+  .btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(224,50,42,0.45);}
   .btn-ghost{background:transparent;color:var(--white);border:1px solid var(--line);clip-path:none;border-radius:3px;}
   .btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
   .btn-danger{background:var(--red-bright);color:var(--white);}
-  .btn-block{width:100%;}
+  .btn-block{width:100%;justify-content:center;}
   .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none !important;box-shadow:none !important;}
-
-  /* Button spinner */
-  .btn .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;}
+  .btn .spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
   .btn.loading .spinner{display:inline-block;}
   .btn.loading .btn-text{opacity:0.7;}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* STATS STRIP */
+  /* ========== STATS ========== */
   .stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
-  .stat{padding:28px 20px;text-align:center;border-right:1px solid var(--line);}
+  .stat{padding:24px 16px;text-align:center;border-right:1px solid var(--line);}
   .stat:last-child{border-right:none;}
-  .stat .num{font-family:'Orbitron',sans-serif;font-weight:700;font-size:30px;color:var(--gold);}
-  .stat .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:0.12em;margin-top:4px;}
+  .stat .num{font-family:'Orbitron',sans-serif;font-weight:700;font-size:28px;color:var(--gold);}
+  .stat .lbl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.1em;margin-top:4px;}
 
-  /* SECTION */
-  .section{padding:80px 24px;}
-  .section-head{margin-bottom:40px;}
-  .section-head .eyebrow{margin-bottom:8px;}
-  .section-head h2{font-size:34px;}
+  /* ========== SECTIONS ========== */
+  .section{padding:60px 20px;}
+  .section-head{margin-bottom:32px;}
+  .section-head .eyebrow{margin-bottom:6px;}
+  .section-head h2{font-size:30px;}
 
-  .roles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .roles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
   .role-card{
-    background:var(--panel);border:1px solid var(--line);padding:26px 20px;
-    clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+    background:var(--panel);border:1px solid var(--line);padding:22px 18px;
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
     transition:border-color .15s;
   }
   .role-card:hover{border-color:var(--gold-dim);}
-  .role-card .tag{color:var(--gold);font-family:'Orbitron',sans-serif;font-weight:700;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;display:block;}
-  .role-card h3{font-size:20px;margin-bottom:10px;}
-  .role-card p{color:var(--muted);font-size:14px;line-height:1.55;}
+  .role-card .tag{color:var(--gold);font-family:'Orbitron',sans-serif;font-weight:700;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;display:block;}
+  .role-card h3{font-size:18px;margin-bottom:8px;}
+  .role-card p{color:var(--muted);font-size:13px;line-height:1.5;}
 
-  /* FORM PANELS */
-  .center-panel{display:flex;align-items:center;justify-content:center;min-height:78vh;padding:40px 20px;}
+  /* ========== PANELS ========== */
+  .center-panel{display:flex;align-items:center;justify-content:center;min-height:70vh;padding:30px 16px;}
   .panel{
-    width:100%;max-width:460px;background:var(--panel);border:1px solid var(--line);
-    padding:36px 32px;clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
+    width:100%;max-width:440px;background:var(--panel);border:1px solid var(--line);
+    padding:30px 28px;clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);
   }
-  .panel h2{font-size:26px;margin-bottom:6px;}
-  .panel .sub{color:var(--muted);font-size:14px;margin-bottom:26px;}
-  .field{margin-bottom:16px;}
-  .field label{display:block;font-family:'Orbitron',sans-serif;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:6px;}
-  .field input, .field select, .field textarea{
+  .panel h2{font-size:24px;margin-bottom:4px;}
+  .panel .sub{color:var(--muted);font-size:13px;margin-bottom:22px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-family:'Orbitron',sans-serif;font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:4px;}
+  .field input,.field select,.field textarea{
     width:100%;background:var(--bg);border:1px solid var(--line);color:var(--white);
-    padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;border-radius:3px;
+    padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;border-radius:3px;
   }
-  .field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:var(--gold);}
-  .field textarea{resize:vertical;min-height:80px;}
-  .msg{padding:11px 14px;border-radius:3px;font-size:13px;margin-bottom:16px;display:none;}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gold);}
+  .field textarea{resize:vertical;min-height:70px;}
+  .msg{padding:10px 14px;border-radius:3px;font-size:13px;margin-bottom:14px;display:none;}
   .msg.show{display:block;}
   .msg.error{background:rgba(224,50,42,0.12);border:1px solid rgba(224,50,42,0.4);color:#ff8f8b;}
   .msg.ok{background:rgba(240,169,58,0.1);border:1px solid rgba(240,169,58,0.4);color:#f5c887;}
-  .switch-link{text-align:center;margin-top:18px;font-size:13px;color:var(--muted);}
+  .switch-link{text-align:center;margin-top:16px;font-size:13px;color:var(--muted);}
   .switch-link a{color:var(--gold);font-weight:600;}
 
-  /* DASHBOARD */
-  .dash-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;flex-wrap:wrap;gap:16px;}
-  .dash-head h2{font-size:32px;}
-  .dash-head .sub{color:var(--muted);font-size:14px;margin-top:4px;}
+  /* ========== DASHBOARD ========== */
+  .dash-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+  .dash-head h2{font-size:28px;}
+  .dash-head .sub{color:var(--muted);font-size:13px;margin-top:2px;}
   .dash-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;}
   .card{
-    background:var(--panel);border:1px solid var(--line);padding:24px;
-    clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
+    background:var(--panel);border:1px solid var(--line);padding:20px;
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
   }
-  .card h3{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;}
-  .profile-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;}
+  .card h3{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+  .profile-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;}
   .profile-row:last-child{border-bottom:none;}
   .profile-row .k{color:var(--muted);}
-  .profile-row .v{font-family:'JetBrains Mono',monospace;font-weight:500;}
-  .badge{display:inline-block;padding:3px 10px;border-radius:2px;font-family:'Orbitron',sans-serif;font-weight:700;font-size:9px;letter-spacing:0.05em;text-transform:uppercase;}
+  .profile-row .v{font-weight:500;}
+  .badge{display:inline-block;padding:2px 10px;border-radius:2px;font-family:'Orbitron',sans-serif;font-weight:700;font-size:8px;letter-spacing:0.05em;text-transform:uppercase;}
   .badge.member{background:rgba(141,141,151,0.2);color:var(--muted);}
   .badge.officer{background:rgba(240,169,58,0.18);color:var(--gold);}
   .badge.admin{background:rgba(224,50,42,0.18);color:#ff6b66;}
-  .empty{color:var(--muted);font-size:13px;padding:20px 0;text-align:center;}
+  .empty{color:var(--muted);font-size:13px;padding:16px 0;text-align:center;}
 
-  /* HQ PORTAL */
-  .hq-tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:26px;padding-bottom:2px;}
+  /* ========== HQ ========== */
+  .hq-tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:22px;padding-bottom:2px;}
   .hq-tab{
-    font-family:'Orbitron',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.04em;text-transform:uppercase;
-    background:none;border:none;color:var(--muted);padding:11px 16px;cursor:pointer;border-bottom:2px solid transparent;
+    font-family:'Orbitron',sans-serif;font-weight:600;font-size:10px;letter-spacing:0.04em;text-transform:uppercase;
+    background:none;border:none;color:var(--muted);padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;
   }
   .hq-tab:hover{color:var(--white);}
   .hq-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
   .hq-panel{display:none;}
   .hq-panel.active{display:block;}
+
   .list-card{
-    background:var(--panel);border:1px solid var(--line);padding:18px 20px;margin-bottom:12px;
-    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
-    display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;
+    background:var(--panel);border:1px solid var(--line);padding:16px 18px;margin-bottom:10px;
+    clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+    display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;
   }
-  .list-card .info{flex:1;min-width:200px;}
-  .list-card .info h4{font-family:'Teko',sans-serif;font-size:20px;text-transform:uppercase;margin-bottom:4px;}
-  .list-card .info p{color:var(--muted);font-size:13px;line-height:1.5;}
-  .list-card .actions{display:flex;gap:8px;flex-shrink:0;}
-  .btn-sm{padding:8px 16px;font-size:12px;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);display:inline-flex;align-items:center;gap:6px;}
+  .list-card .info{flex:1;min-width:160px;}
+  .list-card .info h4{font-family:'Teko',sans-serif;font-size:18px;text-transform:uppercase;margin-bottom:2px;}
+  .list-card .info p{color:var(--muted);font-size:12px;line-height:1.5;}
+  .list-card .actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;}
+  .btn-sm{padding:6px 14px;font-size:11px;clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%);display:inline-flex;align-items:center;gap:4px;}
   .btn-approve{background:var(--gold);color:#0a0705;}
   .btn-reject{background:transparent;border:1px solid var(--red-bright);color:var(--red-bright);}
+
   .table-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);}
-  .hq-table{width:100%;border-collapse:collapse;font-size:14px;}
+  .hq-table{width:100%;border-collapse:collapse;font-size:13px;}
   .hq-table th{
-    font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);
-    text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);
+    font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);
+    text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);
   }
-  .hq-table td{padding:11px 16px;border-bottom:1px solid var(--line);}
-  .hq-table select{background:var(--bg);color:var(--white);border:1px solid var(--line);padding:5px 8px;border-radius:3px;font-size:13px;}
-  .key-chip{font-family:'JetBrains Mono',monospace;background:var(--panel-2);border:1px solid var(--line);padding:4px 10px;border-radius:3px;letter-spacing:0.05em;}
+  .hq-table td{padding:9px 14px;border-bottom:1px solid var(--line);}
+  .hq-table select{background:var(--bg);color:var(--white);border:1px solid var(--line);padding:4px 6px;border-radius:3px;font-size:12px;}
+  .key-chip{font-family:'JetBrains Mono',monospace;background:var(--panel-2);border:1px solid var(--line);padding:3px 10px;border-radius:3px;letter-spacing:0.05em;font-size:12px;}
 
-  /* ROSTER GRID */
-  .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;}
-  .roster-card{background:var(--panel);border:1px solid var(--line);padding:16px;text-align:center;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);}
-  .roster-card .avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 10px;background:var(--panel-2);border:2px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px;}
+  /* ========== ROSTER GRID ========== */
+  .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;}
+  .roster-card{background:var(--panel);border:1px solid var(--line);padding:14px;text-align:center;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);}
+  .roster-card .avatar{width:56px;height:56px;border-radius:50%;margin:0 auto 8px;background:var(--panel-2);border:2px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:24px;}
   .roster-card .avatar img{width:100%;height:100%;object-fit:cover;}
-  .roster-card .name{font-weight:600;}
-  .roster-card .rank{font-size:12px;color:var(--muted);}
+  .roster-card .name{font-weight:600;font-size:14px;}
+  .roster-card .rank{font-size:11px;color:var(--muted);}
 
-  /* STATS CARDS */
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:24px;}
-  .stat-card{background:var(--panel);border:1px solid var(--line);padding:20px;text-align:center;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);}
-  .stat-card .num{font-family:'Orbitron',sans-serif;font-size:32px;color:var(--gold);}
-  .stat-card .lbl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;}
+  /* ========== STATS GRID ========== */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:20px;}
+  .stat-card{background:var(--panel);border:1px solid var(--line);padding:18px;text-align:center;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);}
+  .stat-card .num{font-family:'Orbitron',sans-serif;font-size:28px;color:var(--gold);}
+  .stat-card .lbl{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;}
 
-  footer{border-top:1px solid var(--line);padding:28px 24px;text-align:center;color:var(--muted);font-size:12px;}
-
-  /* TOAST */
+  /* ========== TOAST ========== */
   #toast-container{
-    position:fixed;top:20px;right:20px;z-index:9999;
-    display:flex;flex-direction:column;gap:12px;max-width:380px;width:100%;pointer-events:none;
+    position:fixed;top:16px;right:16px;z-index:9999;
+    display:flex;flex-direction:column;gap:10px;max-width:360px;width:100%;pointer-events:none;
   }
   .toast{
-    pointer-events:auto;padding:14px 20px;border-radius:6px;background:var(--panel-2);
+    pointer-events:auto;padding:12px 18px;border-radius:6px;background:var(--panel-2);
     border-left:4px solid var(--gold);box-shadow:0 8px 24px rgba(0,0,0,0.7);
-    color:var(--white);font-size:0.9rem;font-weight:500;
+    color:var(--white);font-size:0.85rem;font-weight:500;
     transform:translateX(110%);animation:slideIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
     display:flex;align-items:center;gap:10px;border:1px solid var(--line);
   }
@@ -230,40 +324,96 @@
   .toast.success{border-left-color:#2ecc71;}
   .toast.error{border-left-color:#e74c3c;}
   .toast.warning{border-left-color:#f1c40f;}
-  .toast-icon{font-size:1.3rem;}
+  .toast-icon{font-size:1.2rem;}
   @keyframes slideIn{0%{transform:translateX(110%);opacity:0;}100%{transform:translateX(0);opacity:1;}}
   @keyframes slideOut{0%{transform:translateX(0);opacity:1;}100%{transform:translateX(110%);opacity:0;}}
 
+  footer{border-top:1px solid var(--line);padding:24px 20px;text-align:center;color:var(--muted);font-size:11px;}
+
+  /* ========== RESPONSIVE ========== */
   @media (max-width:760px){
-    .hero h1{font-size:44px;}
+    .hero h1{font-size:40px;}
     .stats{grid-template-columns:repeat(2,1fr);}
     .stat:nth-child(2){border-right:none;}
     .roles{grid-template-columns:1fr 1fr;}
     .dash-grid{grid-template-columns:1fr;}
-    .navlinks{gap:2px;}
-    .navlinks a, .navlinks button{padding:8px 10px;font-size:13px;}
+    .nav-left .brand-text{font-size:13px;}
+    .section{padding:40px 16px;}
+    .hero{padding:60px 16px 40px;}
+    .panel{padding:24px 20px;}
+    .sidebar{width:260px;}
     .stats-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:480px){
+    .hero h1{font-size:32px;}
+    .roles{grid-template-columns:1fr;}
+    .brand-text{font-size:11px;}
+    .brand-logo{width:24px;height:24px;}
+    .avatar-btn{width:32px;height:32px;font-size:14px;}
+    nav{padding:10px 14px;}
   }
 </style>
 </head>
 <body>
 
+<!-- ========== TOAST ========== -->
 <div id="toast-container"></div>
 
-<nav>
-  <div class="brand">
-    <img src="logo.png" alt="DEADSHOT" class="brand-logo" onerror="this.style.display='none'">
-    <span class="brand-text">D&#7431;&#7429;dS&#688;&oslash;&#7451;&#9889;</span>
+<!-- ========== SIDEBAR OVERLAY ========== -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ========== SIDEBAR ========== -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <span style="font-size:24px;">☰</span>
+    <span class="brand-text">DEADSHOT Guild</span>
   </div>
-  <div class="navlinks" id="navlinks"></div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <!-- Filled by JS -->
+  </nav>
+  <div class="sidebar-footer">
+    <button id="sidebarLogout"><span>🚪</span> Logout</button>
+  </div>
+</div>
+
+<!-- ========== NAV ========== -->
+<nav>
+  <div class="nav-left">
+    <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="brand">
+      <img src="logo.png" alt="DEADSHOT" class="brand-logo" onerror="this.style.display='none'">
+      <span class="brand-text">DEADSHOT</span>
+    </div>
+  </div>
+  <div class="nav-right">
+    <button class="avatar-btn" id="avatarBtn" aria-label="User menu">
+      <span id="avatarDisplay">👤</span>
+    </button>
+    <div class="avatar-dropdown" id="avatarDropdown">
+      <div class="drop-user">
+        <div class="drop-avatar" id="dropAvatar">👤</div>
+        <div class="drop-info">
+          <span class="drop-name" id="dropName">Guest</span>
+          <span class="drop-role" id="dropRole">Not logged in</span>
+        </div>
+      </div>
+      <button class="drop-item" id="dropEditProfile"><span class="icon">📝</span> Edit Profile</button>
+      <button class="drop-item" id="dropChangePassword"><span class="icon">🔑</span> Change Password</button>
+      <button class="drop-item danger" id="dropLogout"><span class="icon">🚪</span> Logout</button>
+    </div>
+  </div>
 </nav>
+
+<!-- ========== VIEWS ========== -->
 
 <!-- LANDING -->
 <section class="view" id="view-landing">
   <div class="hero">
     <div class="eyebrow">Free Fire Guild</div>
-    <h1><span class="grad-text">D&#7431;&#7429;dS&#688;&oslash;&#7451;&#9889;</span> GUILD<br>COMMAND CENTER</h1>
-    <p>The official headquarters for DeadShot Guild. Roster, events, attendance, and rank — all in one place, built for squad.</p>
+    <h1><span class="grad-text">DEADSHOT</span> GUILD<br>COMMAND CENTER</h1>
+    <p>The official headquarters for DeadShot Guild. Members, events, attendance, and rank — all in one place.</p>
     <div class="hero-actions">
       <a class="btn btn-primary" href="#apply">Apply To Join</a>
       <a class="btn btn-ghost" href="#login">Member Login</a>
@@ -271,19 +421,19 @@
   </div>
   <div class="stats">
     <div class="stat"><div class="num" id="stat-members">—</div><div class="lbl">Members</div></div>
-    <div class="stat"><div class="num" id="stat-events">—</div><div class="lbl">Events Logged</div></div>
+    <div class="stat"><div class="num" id="stat-events">—</div><div class="lbl">Events</div></div>
     <div class="stat"><div class="num">4</div><div class="lbl">Rank Tiers</div></div>
     <div class="stat"><div class="num">24/7</div><div class="lbl">Command Access</div></div>
   </div>
   <div class="section wrap">
     <div class="section-head">
-      <div class="eyebrow">How access works</div>
-      <h2>Built for real squads, not open signups</h2>
+      <div class="eyebrow">How it works</div>
+      <h2>Built for squads, not open signups</h2>
     </div>
     <div class="roles">
-      <div class="role-card"><span class="tag">01 · Visitor</span><h3>Apply</h3><p>Submit your Free Fire UID and a bit about yourself. No account needed to apply.</p></div>
-      <div class="role-card"><span class="tag">02 · Member</span><h3>Activate</h3><p>Approved applicants get a one-time activation key to register their account.</p></div>
-      <div class="role-card"><span class="tag">03 · Officer</span><h3>Manage</h3><p>Officers run events, approve attendance, and keep the roster sharp.</p></div>
+      <div class="role-card"><span class="tag">01 · Visitor</span><h3>Apply</h3><p>Submit your Free Fire UID and tell us about yourself.</p></div>
+      <div class="role-card"><span class="tag">02 · Member</span><h3>Activate</h3><p>Approved applicants get a one-time activation key to register.</p></div>
+      <div class="role-card"><span class="tag">03 · Officer</span><h3>Manage</h3><p>Officers run events, approve attendance, and review applications.</p></div>
       <div class="role-card"><span class="tag">04 · Admin</span><h3>Command</h3><p>Full control over members, ranks, applications, and guild settings.</p></div>
     </div>
   </div>
@@ -294,7 +444,7 @@
   <div class="center-panel">
     <div class="panel">
       <h2>Apply to Join</h2>
-      <div class="sub">Fill out the form below. Our officers will review your application within 48 hours.</div>
+      <div class="sub">Fill out the form below. Officers review every application.</div>
       <div class="msg" id="apply-msg"></div>
       <form id="apply-form">
         <div class="field"><label>In-Game Name</label><input type="text" id="apply-name" placeholder="Your Free Fire nickname" required></div>
@@ -333,7 +483,7 @@
             <option value="Rifler">Rifler (Medium Range)</option>
           </select>
         </div>
-        <div class="field"><label>Experience</label><textarea id="apply-exp" placeholder="Previous guilds, rank, playstyle, why you want to join..."></textarea></div>
+        <div class="field"><label>Experience</label><textarea id="apply-exp" placeholder="Previous guilds, rank, playstyle..."></textarea></div>
         <button class="btn btn-primary btn-block" type="submit" id="apply-btn"><span class="spinner"></span><span class="btn-text">Submit Application</span></button>
       </form>
     </div>
@@ -385,7 +535,6 @@
   <div class="section wrap">
     <div class="dash-head">
       <div><h2>Welcome back<span id="dash-username">.</span></h2><div class="sub">Your guild status at a glance.</div></div>
-      <button class="btn btn-danger" id="logout-btn">Log Out</button>
     </div>
     <div class="dash-grid">
       <div class="card">
@@ -400,13 +549,13 @@
   </div>
 </section>
 
-<!-- ROSTER (Member View) -->
-<section class="view" id="view-roster">
+<!-- MEMBERS (formerly Roster) -->
+<section class="view" id="view-members">
   <div class="section wrap">
     <div class="dash-head">
-      <div><h2>Guild Roster</h2><div class="sub">All active members of DeadShot.</div></div>
+      <div><h2>Guild Members</h2><div class="sub">All active members of DeadShot.</div></div>
     </div>
-    <div id="roster-container"><div class="empty">Loading members...</div></div>
+    <div id="members-container"><div class="empty">Loading members...</div></div>
   </div>
 </section>
 
@@ -420,7 +569,7 @@
   </div>
 </section>
 
-<!-- PROFILE (Member Edit) -->
+<!-- PROFILE -->
 <section class="view" id="view-profile">
   <div class="section wrap">
     <div class="dash-head">
@@ -428,7 +577,6 @@
     </div>
     <div class="card">
       <form id="profile-form">
-        <div class="field"><label>Member ID</label><input type="text" id="prof-member-id" disabled style="opacity:0.7;"></div>
         <div class="field"><label>Username</label><input type="text" id="prof-username" disabled style="opacity:0.7;"></div>
         <div class="field"><label>Nickname</label><input type="text" id="prof-nickname" placeholder="Your display name"></div>
         <div class="field"><label>Free Fire UID</label><input type="text" id="prof-uid" placeholder="Your Free Fire UID"></div>
@@ -447,12 +595,11 @@
   </div>
 </section>
 
-<!-- HQ (OFFICER / ADMIN) -->
+<!-- HQ -->
 <section class="view" id="view-hq">
   <div class="section wrap">
     <div class="dash-head">
       <div><h2>Guild HQ</h2><div class="sub" id="hq-role-note">Officer / Admin control panel.</div></div>
-      <button class="btn btn-danger" id="hq-logout-btn">Log Out</button>
     </div>
     <div class="hq-tabs" id="hq-tabs">
       <button class="hq-tab active" data-tab="applications">Applications</button>
@@ -470,8 +617,8 @@
 
     <div class="hq-panel" id="hq-members">
       <div class="msg" id="hq-member-msg"></div>
-      <div class="table-wrap"><table class="hq-table"><thead><tr><th>Username</th><th>Member ID</th><th>Rank</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody id="members-tbody"><tr><td colspan="6" class="empty">Loading members...</td></tr></tbody>
+      <div class="table-wrap"><table class="hq-table"><thead><tr><th>Username</th><th>Rank</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="members-tbody"><tr><td colspan="5" class="empty">Loading members...</td></tr></tbody>
       </table></div>
     </div>
 
@@ -528,8 +675,9 @@
   </div>
 </section>
 
-<footer>D&#7431;&#7429;dS&#688;&oslash;&#7451;&#9889; Guild Command Center — Free Fire</footer>
+<footer>DEADSHOT Guild Command Center — Free Fire</footer>
 
+<!-- ========== JAVASCRIPT ========== -->
 <script>
 // ========== TOAST ==========
 function showToast(message, type='info', duration=4500){
@@ -555,11 +703,12 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentSession = null;
 let currentProfile = null;
-const views = ['landing','apply','activate','login','dashboard','roster','events','profile','hq'];
+const views = ['landing','apply','activate','login','dashboard','members','events','profile','hq'];
 
 function showView(name){
   views.forEach(v => document.getElementById('view-'+v).classList.toggle('active', v === name));
   window.scrollTo(0,0);
+  closeSidebar();
 }
 
 async function ensureProfile(){
@@ -571,40 +720,166 @@ async function ensureProfile(){
   return profile;
 }
 
-function renderNav(){
-  const nav = document.getElementById('navlinks');
-  if(currentSession){
-    const isStaff = currentProfile && (currentProfile.role === 'officer' || currentProfile.role === 'admin');
-    nav.innerHTML = `
-      <a href="#dashboard">Dashboard</a>
-      <a href="#roster">Roster</a>
-      <a href="#events">Events</a>
-      <a href="#profile">Profile</a>
-      ${isStaff ? '<a href="#hq">HQ</a>' : ''}
-      <button id="nav-logout">Log Out</button>
-    `;
-    document.getElementById('nav-logout').onclick = doLogout;
+// ========== NAV ==========
+function getAvatarDisplay(profile){
+  if(!profile) return '👤';
+  if(profile.avatar_url) return `<img src="${profile.avatar_url}" alt="avatar">`;
+  return '👤';
+}
+
+function getInitials(profile){
+  if(!profile || !profile.username) return '?';
+  return profile.username.substring(0,2).toUpperCase();
+}
+
+function updateNavbar(){
+  const avatarDisplay = document.getElementById('avatarDisplay');
+  const dropAvatar = document.getElementById('dropAvatar');
+  const dropName = document.getElementById('dropName');
+  const dropRole = document.getElementById('dropRole');
+
+  if(currentSession && currentProfile){
+    avatarDisplay.innerHTML = getAvatarDisplay(currentProfile);
+    dropAvatar.innerHTML = getAvatarDisplay(currentProfile);
+    dropName.textContent = currentProfile.nickname || currentProfile.username;
+    const roleMap = { admin:'Admin 🔴', officer:'Officer 🟡', member:'Member' };
+    dropRole.textContent = roleMap[currentProfile.role] || 'Member';
+    dropRole.style.color = currentProfile.role === 'admin' ? '#ff6b66' : (currentProfile.role === 'officer' ? '#f0a93a' : '#948a86');
+    document.querySelectorAll('.drop-item').forEach(el => el.style.display = 'flex');
+    document.getElementById('dropLogout').style.display = 'flex';
+    document.getElementById('sidebarLogout').style.display = 'flex';
   } else {
-    nav.innerHTML = `<a href="#apply">Apply</a><a href="#activate">Activate</a><a class="cta" href="#login">Login</a>`;
+    avatarDisplay.textContent = '👤';
+    dropAvatar.textContent = '👤';
+    dropName.textContent = 'Guest';
+    dropRole.textContent = 'Not logged in';
+    dropRole.style.color = '#948a86';
+    document.querySelectorAll('.drop-item').forEach(el => el.style.display = 'none');
+    document.getElementById('dropLogout').style.display = 'none';
+    document.getElementById('sidebarLogout').style.display = 'none';
   }
 }
 
+// ========== SIDEBAR ==========
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').classList.add('open');
+  document.getElementById('hamburgerBtn').classList.add('open');
+}
+
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+  document.getElementById('hamburgerBtn').classList.remove('open');
+}
+
+function toggleSidebar(){
+  if(document.getElementById('sidebar').classList.contains('open')){
+    closeSidebar();
+  } else {
+    openSidebar();
+  }
+}
+
+// Click outside to close
+document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
+
+// Hamburger button
+document.getElementById('hamburgerBtn').addEventListener('click', toggleSidebar);
+
+// ========== SIDEBAR NAV ==========
+function renderSidebar(){
+  const nav = document.getElementById('sidebarNav');
+  if(currentSession){
+    const isStaff = currentProfile && (currentProfile.role === 'officer' || currentProfile.role === 'admin');
+    nav.innerHTML = `
+      <a href="#dashboard" data-view="dashboard"><span class="icon">📊</span> Dashboard</a>
+      <a href="#members" data-view="members"><span class="icon">👥</span> Members</a>
+      <a href="#events" data-view="events"><span class="icon">📅</span> Events</a>
+      ${isStaff ? `<a href="#hq" data-view="hq"><span class="icon">📢</span> HQ</a>` : ''}
+    `;
+    // Highlight active
+    const hash = location.hash.replace('#','') || 'dashboard';
+    nav.querySelectorAll('a').forEach(a => {
+      a.classList.toggle('active', a.dataset.view === hash);
+    });
+  } else {
+    nav.innerHTML = `
+      <a href="#apply" data-view="apply"><span class="icon">📝</span> Apply</a>
+      <a href="#activate" data-view="activate"><span class="icon">🔑</span> Activate</a>
+      <a href="#login" data-view="login"><span class="icon">🔐</span> Login</a>
+    `;
+  }
+  // Click handlers
+  nav.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      location.hash = '#' + a.dataset.view;
+      closeSidebar();
+    });
+  });
+}
+
+// ========== AVATAR DROPDOWN ==========
+document.getElementById('avatarBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('avatarDropdown').classList.toggle('open');
+});
+
+document.addEventListener('click', () => {
+  document.getElementById('avatarDropdown').classList.remove('open');
+});
+
+// Dropdown actions
+document.getElementById('dropEditProfile').addEventListener('click', () => {
+  location.hash = '#profile';
+  document.getElementById('avatarDropdown').classList.remove('open');
+});
+
+document.getElementById('dropChangePassword').addEventListener('click', () => {
+  location.hash = '#profile';
+  document.getElementById('avatarDropdown').classList.remove('open');
+  setTimeout(() => {
+    document.getElementById('new-password').focus();
+  }, 300);
+});
+
+document.getElementById('dropLogout').addEventListener('click', doLogout);
+document.getElementById('sidebarLogout').addEventListener('click', doLogout);
+
+// ========== NAVIGATION ==========
 async function route(){
   const hash = (location.hash || '#landing').replace('#','');
-  if(hash === 'dashboard' || hash === 'roster' || hash === 'events' || hash === 'profile'){
-    if(!currentSession){ location.hash = '#login'; return; }
-    if(hash === 'dashboard') { await loadDashboard(); showView('dashboard'); return; }
-    if(hash === 'roster') { loadRoster(); showView('roster'); return; }
-    if(hash === 'events') { loadEvents(); showView('events'); return; }
-    if(hash === 'profile') { loadProfileForm(); showView('profile'); return; }
+  const validViews = ['landing','apply','activate','login','dashboard','members','events','profile','hq'];
+  if(!validViews.includes(hash)) { showView('landing'); return; }
+
+  // Check auth for protected views
+  const protectedViews = ['dashboard','members','events','profile','hq'];
+  if(protectedViews.includes(hash) && !currentSession){
+    location.hash = '#login';
+    return;
   }
+
   if(hash === 'hq'){
-    if(!currentSession){ location.hash = '#login'; return; }
     const profile = await ensureProfile();
-    if(!profile || (profile.role !== 'officer' && profile.role !== 'admin')){ location.hash = '#dashboard'; return; }
-    showView('hq'); initHQ(); return;
+    if(!profile || (profile.role !== 'officer' && profile.role !== 'admin')){
+      location.hash = '#dashboard';
+      return;
+    }
+    showView('hq');
+    initHQ();
+    renderSidebar();
+    return;
   }
-  showView(views.includes(hash) ? hash : 'landing');
+
+  if(hash === 'dashboard'){ await loadDashboard(); showView('dashboard'); renderSidebar(); return; }
+  if(hash === 'members'){ loadMembersView(); showView('members'); renderSidebar(); return; }
+  if(hash === 'events'){ loadEventsView(); showView('events'); renderSidebar(); return; }
+  if(hash === 'profile'){ loadProfileForm(); showView('profile'); renderSidebar(); return; }
+
+  showView(hash);
+  renderSidebar();
+  if(hash === 'landing') loadStats();
 }
 window.addEventListener('hashchange', route);
 
@@ -689,7 +964,7 @@ document.getElementById('apply-form').addEventListener('submit', async (e) => {
       experience: document.getElementById('apply-exp').value.trim()
     });
     if(error) throw error;
-    showToast('Application submitted! An officer will review it within 48 hours.', 'success');
+    showToast('Application submitted! An officer will review it.', 'success');
     e.target.reset();
     document.getElementById('apply-lga').innerHTML = '<option value="">Select your LGA</option>';
     document.getElementById('apply-lga').disabled = true;
@@ -697,7 +972,7 @@ document.getElementById('apply-form').addEventListener('submit', async (e) => {
   setLoading(btn, false);
 });
 
-// ========== ACTIVATE (Username + Key) ==========
+// ========== ACTIVATE ==========
 let verifiedKey = null;
 let verifiedUsername = null;
 
@@ -710,7 +985,6 @@ document.getElementById('key-form').addEventListener('submit', async (e) => {
     const key = document.getElementById('activate-key').value.trim();
     if (!username || !key) throw new Error('Please enter both username and key.');
 
-    // Check if key is valid AND linked to this username
     const { data: keyData, error: keyError } = await sb
       .from('activation_keys')
       .select('*, applications(applicant_name)')
@@ -725,7 +999,7 @@ document.getElementById('key-form').addEventListener('submit', async (e) => {
 
     verifiedKey = key;
     verifiedUsername = username;
-    showToast('Key verified! Create your account below.', 'success');
+    showToast('Key verified! Create your account.', 'success');
     document.getElementById('key-form').style.display = 'none';
     document.getElementById('register-form').style.display = 'block';
     document.getElementById('reg-username').value = username;
@@ -770,7 +1044,8 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     currentSession = data.session;
     currentProfile = null;
     await ensureProfile();
-    renderNav();
+    renderSidebar();
+    updateNavbar();
     location.hash = '#dashboard';
     showToast('Logged in!', 'success');
   } catch(err){ showToast('Login failed: ' + err.message, 'error'); }
@@ -782,12 +1057,12 @@ async function doLogout(){
   await sb.auth.signOut();
   currentSession = null;
   currentProfile = null;
-  renderNav();
+  renderSidebar();
+  updateNavbar();
   location.hash = '#landing';
+  closeSidebar();
   showToast('Logged out.', 'warning');
 }
-document.getElementById('logout-btn').addEventListener('click', doLogout);
-document.getElementById('hq-logout-btn').addEventListener('click', doLogout);
 
 // ========== DASHBOARD ==========
 async function loadDashboard(){
@@ -800,7 +1075,6 @@ async function loadDashboard(){
   if(profile){
     const badgeClass = profile.role === 'admin' ? 'admin' : (profile.role === 'officer' ? 'officer' : 'member');
     rows.innerHTML = `
-      <div class="profile-row"><span class="k">Member ID</span><span class="v">${profile.member_id}</span></div>
       <div class="profile-row"><span class="k">Username</span><span class="v">${profile.username}</span></div>
       <div class="profile-row"><span class="k">Nickname</span><span class="v">${profile.nickname || '—'}</span></div>
       <div class="profile-row"><span class="k">Rank</span><span class="v">${profile.rank}</span></div>
@@ -814,16 +1088,17 @@ async function loadDashboard(){
   if(announcements && announcements.length){
     list.innerHTML = announcements.map(a => `
       <div class="profile-row" style="display:block;">
-        <div style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:15px;">${a.title}</div>
-        <div style="color:var(--muted);font-size:13px;margin-top:3px;">${a.content}</div>
+        <div style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:14px;">${a.title}</div>
+        <div style="color:var(--muted);font-size:12px;margin-top:2px;">${a.content}</div>
       </div>
     `).join('');
   }
+  updateNavbar();
 }
 
-// ========== ROSTER (Member View) ==========
-async function loadRoster(){
-  const container = document.getElementById('roster-container');
+// ========== MEMBERS VIEW ==========
+async function loadMembersView(){
+  const container = document.getElementById('members-container');
   container.innerHTML = '<div class="empty">Loading members...</div>';
   const { data: members } = await sb.from('profiles').select('*').eq('status', 'active').order('username');
   if(!members || !members.length){ container.innerHTML = '<div class="empty">No members found.</div>'; return; }
@@ -836,8 +1111,8 @@ async function loadRoster(){
   `).join('')}</div>`;
 }
 
-// ========== EVENTS (Member View) ==========
-async function loadEvents(){
+// ========== EVENTS VIEW ==========
+async function loadEventsView(){
   const container = document.getElementById('events-container');
   container.innerHTML = '<div class="empty">Loading events...</div>';
   const { data: events } = await sb.from('events').select('*').in('status', ['upcoming', 'live']).order('event_date');
@@ -873,7 +1148,7 @@ async function loadEvents(){
       const { error } = await sb.from('attendance').insert({ event_id: id, member_id: currentSession.user.id, status: 'confirmed' });
       setLoading(btn, false);
       if (error) showToast(error.message, 'error');
-      else { showToast('Attendance confirmed!', 'success'); loadEvents(); }
+      else { showToast('Attendance confirmed!', 'success'); loadEventsView(); }
     });
   });
   container.querySelectorAll('.checkin-event-btn').forEach(btn => {
@@ -884,22 +1159,22 @@ async function loadEvents(){
         .eq('event_id', id).eq('member_id', currentSession.user.id);
       setLoading(btn, false);
       if (error) showToast(error.message, 'error');
-      else { showToast('Checked in!', 'success'); loadEvents(); }
+      else { showToast('Checked in!', 'success'); loadEventsView(); }
     });
   });
 }
 
-// ========== PROFILE FORM ==========
+// ========== PROFILE ==========
 async function loadProfileForm(){
   const p = currentProfile;
   if(!p) return;
-  document.getElementById('prof-member-id').value = p.member_id || '';
   document.getElementById('prof-username').value = p.username || '';
   document.getElementById('prof-nickname').value = p.nickname || '';
   document.getElementById('prof-uid').value = p.free_fire_uid || '';
   document.getElementById('prof-avatar').value = p.avatar_url || '';
   document.getElementById('prof-role').value = p.role || 'member';
   document.getElementById('prof-rank').value = p.rank || 'Recruit';
+  updateNavbar();
 }
 
 document.getElementById('profile-form').addEventListener('submit', async (e) => {
@@ -916,6 +1191,7 @@ document.getElementById('profile-form').addEventListener('submit', async (e) => 
     showToast('Profile updated!', 'success');
     await ensureProfile();
     loadProfileForm();
+    updateNavbar();
   } catch(err){ showToast(err.message, 'error'); }
   setLoading(btn, false);
 });
@@ -941,14 +1217,12 @@ async function loadStats(){
   if(eventCount !== null) document.getElementById('stat-events').textContent = eventCount;
 }
 
-// ============================================================
-// HQ PORTAL
-// ============================================================
+// ========== HQ ==========
 let hqInitialized = false;
 
 function initHQ(){
   const isAdmin = currentProfile && currentProfile.role === 'admin';
-  document.getElementById('hq-role-note').textContent = isAdmin ? 'Admin access — full control panel.' : 'Officer access — events, applications, and keys.';
+  document.getElementById('hq-role-note').textContent = isAdmin ? 'Admin access — full control.' : 'Officer access — events, applications, and keys.';
 
   document.querySelectorAll('.hq-tab').forEach(btn => {
     if(btn.dataset.tab === 'members' || btn.dataset.tab === 'keys'){
@@ -972,14 +1246,14 @@ function switchHQTab(tab){
   document.querySelectorAll('.hq-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.hq-panel').forEach(p => p.classList.toggle('active', p.id === 'hq-' + tab));
   if(tab === 'applications') loadApplications();
-  if(tab === 'members') loadMembers();
+  if(tab === 'members') loadMembersHQ();
   if(tab === 'events') loadEventsHQ();
   if(tab === 'announcements') loadAnnouncementsHQ();
   if(tab === 'keys') loadKeys();
   if(tab === 'stats') loadStatsHQ();
 }
 
-// ========== APPLICATIONS (Officer + Admin can approve) ==========
+// ========== APPLICATIONS HQ ==========
 async function loadApplications(){
   const list = document.getElementById('applications-list');
   list.innerHTML = `<div class="empty">Loading...</div>`;
@@ -1024,17 +1298,16 @@ async function handleApplication(appId, action, btn){
   setLoading(btn, false);
 }
 
-// ========== MEMBERS (Admin only) ==========
-async function loadMembers(){
+// ========== MEMBERS HQ ==========
+async function loadMembersHQ(){
   const tbody = document.getElementById('members-tbody');
-  tbody.innerHTML = `<tr><td colspan="6" class="empty">Loading...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="5" class="empty">Loading...</td></tr>`;
   const { data: members } = await sb.from('profiles').select('*').order('join_date', { ascending:true });
-  if(!members || !members.length){ tbody.innerHTML = `<tr><td colspan="6" class="empty">No members found.</td></tr>`; return; }
+  if(!members || !members.length){ tbody.innerHTML = `<tr><td colspan="5" class="empty">No members found.</td></tr>`; return; }
   const isAdmin = currentProfile?.role === 'admin';
   tbody.innerHTML = members.map(m => `
     <tr>
       <td>${m.username}</td>
-      <td class="mono">${m.member_id}</td>
       <td>${m.rank}</td>
       <td>
         ${isAdmin ? `<select data-member="${m.id}" data-field="role" class="member-update-select">
@@ -1080,14 +1353,12 @@ async function loadMembers(){
         if(!confirm(`⚠️ Permanently delete member "${username}"? This cannot be undone.`)) return;
         setLoading(this, true);
         try {
-          // Delete from profiles
           const { error: profileError } = await sb.from('profiles').delete().eq('id', id);
           if(profileError) throw profileError;
-          // Delete auth user (via admin API)
           const { error: authError } = await sb.auth.admin.deleteUser(id);
           if(authError) throw authError;
           showToast(`Member "${username}" permanently deleted.`, 'success');
-          loadMembers();
+          loadMembersHQ();
         } catch(err){ showToast('Delete failed: ' + err.message, 'error'); }
         setLoading(this, false);
       });
@@ -1095,7 +1366,9 @@ async function loadMembers(){
   }
 }
 
-// ========== EVENTS HQ (Create + Edit + Delete) ==========
+// ========== EVENTS HQ ==========
+let editingEventId = null;
+
 async function createEvent(e){
   e.preventDefault();
   const btn = document.getElementById('hq-event-btn');
@@ -1117,8 +1390,6 @@ async function createEvent(e){
   } catch(err){ showToast(err.message, 'error'); }
   setLoading(btn, false);
 }
-
-let editingEventId = null;
 
 async function loadEventsHQ(){
   const list = document.getElementById('events-list');
@@ -1168,14 +1439,12 @@ async function loadEventsHQ(){
     </div>
   `).join('');
 
-  // Edit buttons
   list.querySelectorAll('.edit-event-btn').forEach(btn => {
     btn.addEventListener('click', function(){
       editingEventId = this.dataset.id;
       loadEventsHQ();
     });
   });
-  // Save edit
   list.querySelectorAll('.save-event-edit').forEach(btn => {
     btn.addEventListener('click', async function(){
       const id = this.dataset.id;
@@ -1197,14 +1466,12 @@ async function loadEventsHQ(){
       setLoading(this, false);
     });
   });
-  // Cancel edit
   list.querySelectorAll('.cancel-event-edit').forEach(btn => {
     btn.addEventListener('click', function(){
       editingEventId = null;
       loadEventsHQ();
     });
   });
-  // Delete event
   list.querySelectorAll('.delete-event-btn').forEach(btn => {
     btn.addEventListener('click', async function(){
       if(!confirm('Delete this event?')) return;
@@ -1253,7 +1520,7 @@ async function loadAnnouncementsHQ(){
   `).join('');
 }
 
-// ========== ACTIVATION KEYS HQ ==========
+// ========== KEYS HQ ==========
 async function generateRawKey(){
   const btn = document.getElementById('hq-generate-key-btn');
   setLoading(btn, true);
@@ -1281,7 +1548,7 @@ async function loadKeys(){
   `).join('');
 }
 
-// ========== STATISTICS HQ ==========
+// ========== STATS HQ ==========
 async function loadStatsHQ(){
   try {
     const { count: totalMembers } = await sb.from('profiles').select('*', { count:'exact', head:true });
@@ -1294,7 +1561,6 @@ async function loadStatsHQ(){
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const { count: newMembers } = await sb.from('profiles').select('*', { count:'exact', head:true }).gte('join_date', thirtyDaysAgo.toISOString().split('T')[0]);
 
-    // Attendance rate: average confirmed per event
     let attendanceRate = 0;
     if (totalEvents > 0) {
       const { data: attData } = await sb.from('attendance').select('event_id', { count:'exact' });
@@ -1315,16 +1581,33 @@ async function loadStatsHQ(){
   } catch(e){ /* ignore */ }
 }
 
+// ========== AUTH STATE ==========
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+    currentSession = session;
+    await ensureProfile();
+    renderSidebar();
+    updateNavbar();
+    route();
+  } else if (event === 'SIGNED_OUT') {
+    currentSession = null;
+    currentProfile = null;
+    renderSidebar();
+    updateNavbar();
+    location.hash = '#landing';
+  }
+});
+
 // ========== INIT ==========
 (async function init(){
   populateStates();
   const { data: { session } } = await sb.auth.getSession();
   currentSession = session;
   if(currentSession) await ensureProfile();
-  renderNav();
+  renderSidebar();
+  updateNavbar();
   loadStats();
   route();
-  // Set today's date for event form
   document.getElementById('ev-date').value = new Date().toISOString().split('T')[0];
 })();
 </script>
