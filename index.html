@@ -3,21 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DEADSHOT GUILD — Command Center</title>
+<title>DeadShot Guild — Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Orbitron:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --bg:#0a0a0d;
-    --panel:#15151a;
-    --panel-2:#1c1c22;
-    --line:#2a2a32;
-    --orange:#ff6a1a;
-    --orange-dim:#c8500f;
-    --red:#e4312b;
-    --white:#f2f2f0;
-    --muted:#8d8d97;
+    --bg:#08070a;
+    --panel:#15111a;
+    --panel-2:#1c1620;
+    --line:#3a1f24;
+    --gold:#f0a93a;
+    --gold-dim:#c1811f;
+    --red:#a11d1d;
+    --red-bright:#e0322a;
+    --white:#f2ede0;
+    --muted:#948a86;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
@@ -26,10 +27,11 @@
     font-family:'Inter',sans-serif;
     min-height:100vh;
     background-image:
-      linear-gradient(180deg, rgba(228,49,43,0.05) 0%, transparent 40%),
+      linear-gradient(180deg, rgba(224,50,42,0.05) 0%, transparent 40%),
       repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 60px);
   }
-  h1,h2,h3,.display{font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:0.02em;}
+  h1,h2,h3,.display{font-family:'Teko',sans-serif;text-transform:uppercase;letter-spacing:0.01em;font-weight:600;}
+  .hud{font-family:'Orbitron',sans-serif;}
   code, .mono{font-family:'JetBrains Mono',monospace;}
   a{color:inherit;text-decoration:none;}
 
@@ -39,11 +41,16 @@
     padding:18px 32px;border-bottom:1px solid var(--line);
     position:sticky;top:0;background:rgba(10,10,13,0.92);backdrop-filter:blur(8px);z-index:50;
   }
-  .brand{display:flex;align-items:center;gap:10px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:22px;letter-spacing:0.05em;}
-  .brand .bar{width:4px;height:22px;background:var(--orange);clip-path:polygon(30% 0,100% 0,70% 100%,0 100%);}
+  .brand{display:flex;align-items:center;gap:9px;font-family:'Orbitron',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.02em;}
+  .brand-logo{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 0 6px rgba(224,50,42,0.6));}
+  .brand-text{
+    background:linear-gradient(135deg,var(--gold) 30%,var(--red-bright) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 18px rgba(240,169,58,0.25);
+  }
   .navlinks{display:flex;gap:8px;align-items:center;}
   .navlinks a, .navlinks button{
-    font-family:'Rajdhani',sans-serif;font-weight:600;font-size:15px;letter-spacing:0.04em;
+    font-family:'Orbitron',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.03em;
     text-transform:uppercase;color:var(--muted);padding:9px 16px;border:1px solid transparent;
     background:none;cursor:pointer;border-radius:3px;transition:all .15s;
   }
@@ -59,26 +66,30 @@
   .hero{padding:110px 24px 90px;text-align:center;position:relative;overflow:hidden;}
   .hero::before{
     content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);
-    width:900px;height:900px;background:radial-gradient(circle, rgba(255,106,26,0.14) 0%, transparent 65%);
+    width:900px;height:900px;background:radial-gradient(circle, rgba(224,50,42,0.22) 0%, rgba(240,169,58,0.08) 40%, transparent 65%);
     pointer-events:none;
   }
-  .eyebrow{font-family:'Rajdhani',sans-serif;font-weight:600;color:var(--orange);letter-spacing:0.25em;font-size:13px;margin-bottom:18px;}
+  .eyebrow{font-family:'Orbitron',sans-serif;font-weight:600;color:var(--gold);letter-spacing:0.2em;font-size:11px;margin-bottom:18px;}
   .hero h1{font-size:76px;line-height:0.95;font-weight:700;margin-bottom:6px;position:relative;}
-  .hero h1 span{color:var(--orange);}
+  .hero h1 .grad-text{
+    background:linear-gradient(135deg,var(--gold) 20%,var(--red-bright) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 24px rgba(224,50,42,0.35));
+  }
   .hero p{color:var(--muted);font-size:17px;max-width:520px;margin:22px auto 36px;line-height:1.6;}
   .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
 
   .btn{
-    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.03em;
+    font-family:'Orbitron',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.02em;
     text-transform:uppercase;padding:14px 30px;border:none;cursor:pointer;
     clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%);
     transition:transform .15s, box-shadow .15s;display:inline-block;
   }
-  .btn-primary{background:var(--orange);color:#0a0a0a;box-shadow:0 0 0 rgba(255,106,26,0);}
-  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,106,26,0.35);}
+  .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#0a0705;box-shadow:0 0 0 rgba(224,50,42,0);}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(224,50,42,0.45),0 0 20px rgba(240,169,58,0.25);}
   .btn-ghost{background:transparent;color:var(--white);border:1px solid var(--line);clip-path:none;border-radius:3px;}
-  .btn-ghost:hover{border-color:var(--orange);color:var(--orange);}
-  .btn-danger{background:var(--red);color:var(--white);}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-danger{background:var(--red-bright);color:var(--white);}
   .btn-block{width:100%;}
   .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none !important;box-shadow:none !important;}
 
@@ -86,7 +97,7 @@
   .stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
   .stat{padding:28px 20px;text-align:center;border-right:1px solid var(--line);}
   .stat:last-child{border-right:none;}
-  .stat .num{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:36px;color:var(--orange);}
+  .stat .num{font-family:'Orbitron',sans-serif;font-weight:700;font-size:30px;color:var(--gold);}
   .stat .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:0.12em;margin-top:4px;}
 
   /* SECTION */
@@ -101,8 +112,8 @@
     clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
     transition:border-color .15s;
   }
-  .role-card:hover{border-color:var(--orange-dim);}
-  .role-card .tag{color:var(--orange);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;display:block;}
+  .role-card:hover{border-color:var(--gold-dim);}
+  .role-card .tag{color:var(--gold);font-family:'Orbitron',sans-serif;font-weight:700;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;display:block;}
   .role-card h3{font-size:20px;margin-bottom:10px;}
   .role-card p{color:var(--muted);font-size:14px;line-height:1.55;}
 
@@ -115,19 +126,19 @@
   .panel h2{font-size:26px;margin-bottom:6px;}
   .panel .sub{color:var(--muted);font-size:14px;margin-bottom:26px;}
   .field{margin-bottom:16px;}
-  .field label{display:block;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:6px;}
+  .field label{display:block;font-family:'Orbitron',sans-serif;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:6px;}
   .field input, .field select, .field textarea{
     width:100%;background:var(--bg);border:1px solid var(--line);color:var(--white);
     padding:11px 13px;font-family:'Inter',sans-serif;font-size:14px;border-radius:3px;
   }
-  .field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:var(--orange);}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:var(--gold);}
   .field textarea{resize:vertical;min-height:80px;}
   .msg{padding:11px 14px;border-radius:3px;font-size:13px;margin-bottom:16px;display:none;}
   .msg.show{display:block;}
-  .msg.error{background:rgba(228,49,43,0.12);border:1px solid rgba(228,49,43,0.4);color:#ff8f8b;}
-  .msg.ok{background:rgba(255,106,26,0.1);border:1px solid rgba(255,106,26,0.4);color:#ffb17a;}
+  .msg.error{background:rgba(224,50,42,0.12);border:1px solid rgba(224,50,42,0.4);color:#ff8f8b;}
+  .msg.ok{background:rgba(240,169,58,0.1);border:1px solid rgba(240,169,58,0.4);color:#f5c887;}
   .switch-link{text-align:center;margin-top:18px;font-size:13px;color:var(--muted);}
-  .switch-link a{color:var(--orange);font-weight:600;}
+  .switch-link a{color:var(--gold);font-weight:600;}
 
   /* DASHBOARD */
   .dash-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;flex-wrap:wrap;gap:16px;}
@@ -138,16 +149,48 @@
     background:var(--panel);border:1px solid var(--line);padding:24px;
     clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px);
   }
-  .card h3{font-family:'Rajdhani',sans-serif;font-size:14px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;}
+  .card h3{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;}
   .profile-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;}
   .profile-row:last-child{border-bottom:none;}
   .profile-row .k{color:var(--muted);}
   .profile-row .v{font-family:'JetBrains Mono',monospace;font-weight:500;}
-  .badge{display:inline-block;padding:3px 10px;border-radius:2px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:2px;font-family:'Orbitron',sans-serif;font-weight:700;font-size:9px;letter-spacing:0.05em;text-transform:uppercase;}
   .badge.member{background:rgba(141,141,151,0.2);color:var(--muted);}
-  .badge.officer{background:rgba(255,106,26,0.18);color:var(--orange);}
-  .badge.admin{background:rgba(228,49,43,0.18);color:#ff6b66;}
+  .badge.officer{background:rgba(240,169,58,0.18);color:var(--gold);}
+  .badge.admin{background:rgba(224,50,42,0.18);color:#ff6b66;}
   .empty{color:var(--muted);font-size:13px;padding:20px 0;text-align:center;}
+
+  /* HQ PORTAL */
+  .hq-tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:26px;padding-bottom:2px;}
+  .hq-tab{
+    font-family:'Orbitron',sans-serif;font-weight:600;font-size:11px;letter-spacing:0.04em;text-transform:uppercase;
+    background:none;border:none;color:var(--muted);padding:11px 16px;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  .hq-tab:hover{color:var(--white);}
+  .hq-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+  .hq-panel{display:none;}
+  .hq-panel.active{display:block;}
+  .list-card{
+    background:var(--panel);border:1px solid var(--line);padding:18px 20px;margin-bottom:12px;
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+    display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;
+  }
+  .list-card .info{flex:1;min-width:200px;}
+  .list-card .info h4{font-family:'Teko',sans-serif;font-size:20px;text-transform:uppercase;margin-bottom:4px;}
+  .list-card .info p{color:var(--muted);font-size:13px;line-height:1.5;}
+  .list-card .actions{display:flex;gap:8px;flex-shrink:0;}
+  .btn-sm{padding:8px 16px;font-size:12px;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);}
+  .btn-approve{background:var(--gold);color:#0a0705;}
+  .btn-reject{background:transparent;border:1px solid var(--red-bright);color:var(--red-bright);}
+  .table-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);}
+  .hq-table{width:100%;border-collapse:collapse;font-size:14px;}
+  .hq-table th{
+    font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);
+    text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);
+  }
+  .hq-table td{padding:11px 16px;border-bottom:1px solid var(--line);}
+  .hq-table select{background:var(--bg);color:var(--white);border:1px solid var(--line);padding:5px 8px;border-radius:3px;font-size:13px;}
+  .key-chip{font-family:'JetBrains Mono',monospace;background:var(--panel-2);border:1px solid var(--line);padding:4px 10px;border-radius:3px;letter-spacing:0.05em;}
 
   footer{border-top:1px solid var(--line);padding:28px 24px;text-align:center;color:var(--muted);font-size:12px;}
 
@@ -165,7 +208,10 @@
 <body>
 
 <nav>
-  <div class="brand"><span class="bar"></span>DEADSHOT GUILD</div>
+  <div class="brand">
+    <img src="logo.png" alt="DEADSHOT" class="brand-logo" onerror="this.style.display='none'">
+    <span class="brand-text">D&#7431;&#7429;dS&#688;&oslash;&#7451;&#9889;</span>
+  </div>
   <div class="navlinks" id="navlinks"></div>
 </nav>
 
@@ -173,8 +219,8 @@
 <section class="view" id="view-landing">
   <div class="hero">
     <div class="eyebrow">Free Fire Guild</div>
-    <h1>DEADSHOT<span>GUILD</span><br>COMMAND CENTER</h1>
-    <p>The official headquarters for DEADSHOT GUILD. Roster, events, attendance, and rank — all in one place, built for squad.</p>
+    <h1><span class="grad-text">D&#7431;&#7429;dS&#688;&oslash;&#7451;&#9889;</span> GUILD<br>COMMAND CENTER</h1>
+    <p>The official headquarters for DeadShot Guild. Roster, events, attendance, and rank — all in one place, built for squad.</p>
     <div class="hero-actions">
       <a class="btn btn-primary" href="#apply">Apply To Join</a>
       <a class="btn btn-ghost" href="#login">Member Login</a>
@@ -281,9 +327,93 @@
   </div>
 </section>
 
-<footer>DEADSHOT GUILD Command Center — Free Fire</footer>
+<!-- HQ (OFFICER / ADMIN) -->
+<section class="view" id="view-hq">
+  <div class="section wrap">
+    <div class="dash-head">
+      <div>
+        <h2>Guild HQ</h2>
+        <div class="sub" id="hq-role-note">Officer / Admin control panel.</div>
+      </div>
+      <button class="btn btn-danger" id="hq-logout-btn">Log Out</button>
+    </div>
+
+    <div class="hq-tabs" id="hq-tabs">
+      <button class="hq-tab active" data-tab="applications">Applications</button>
+      <button class="hq-tab" data-tab="members">Members</button>
+      <button class="hq-tab" data-tab="events">Events</button>
+      <button class="hq-tab" data-tab="announcements">Announcements</button>
+      <button class="hq-tab" data-tab="keys">Activation Keys</button>
+    </div>
+
+    <!-- APPLICATIONS TAB -->
+    <div class="hq-panel active" id="hq-applications">
+      <div class="msg" id="hq-app-msg"></div>
+      <div id="applications-list"><div class="empty">Loading applications...</div></div>
+    </div>
+
+    <!-- MEMBERS TAB -->
+    <div class="hq-panel" id="hq-members">
+      <div class="msg" id="hq-member-msg"></div>
+      <div class="table-wrap"><table class="hq-table" id="members-table">
+        <thead><tr><th>Username</th><th>Member ID</th><th>Rank</th><th>Role</th><th>Status</th></tr></thead>
+        <tbody id="members-tbody"><tr><td colspan="5" class="empty">Loading members...</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <!-- EVENTS TAB -->
+    <div class="hq-panel" id="hq-events">
+      <div class="card" style="margin-bottom:20px;">
+        <h3>Create Event</h3>
+        <div class="msg" id="hq-event-msg"></div>
+        <form id="hq-event-form">
+          <div class="field"><label>Title</label><input type="text" id="ev-title" required></div>
+          <div class="field"><label>Type</label>
+            <select id="ev-type">
+              <option value="war">War</option><option value="scrim">Scrim</option>
+              <option value="tournament">Tournament</option><option value="meeting">Meeting</option>
+              <option value="training">Training</option>
+            </select>
+          </div>
+          <div class="field"><label>Date</label><input type="date" id="ev-date" required></div>
+          <div class="field"><label>Time</label><input type="time" id="ev-time" required></div>
+          <div class="field"><label>Description</label><textarea id="ev-desc"></textarea></div>
+          <button class="btn btn-primary btn-block" type="submit">Create Event</button>
+        </form>
+      </div>
+      <div id="events-list"><div class="empty">Loading events...</div></div>
+    </div>
+
+    <!-- ANNOUNCEMENTS TAB -->
+    <div class="hq-panel" id="hq-announcements">
+      <div class="card" style="margin-bottom:20px;">
+        <h3>Post Announcement</h3>
+        <div class="msg" id="hq-announce-msg"></div>
+        <form id="hq-announce-form">
+          <div class="field"><label>Title</label><input type="text" id="an-title" required></div>
+          <div class="field"><label>Content</label><textarea id="an-content" required></textarea></div>
+          <button class="btn btn-primary btn-block" type="submit">Post Announcement</button>
+        </form>
+      </div>
+      <div id="hq-announcements-list"><div class="empty">Loading announcements...</div></div>
+    </div>
+
+    <!-- KEYS TAB (admin only) -->
+    <div class="hq-panel" id="hq-keys">
+      <div class="card" style="margin-bottom:20px;">
+        <h3>Generate Activation Key</h3>
+        <div class="msg" id="hq-key-msg"></div>
+        <button class="btn btn-primary" id="hq-generate-key-btn">Generate New Key</button>
+      </div>
+      <div id="keys-list"><div class="empty">Loading keys...</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>D&#7431;&#7429;dS&#688;&oslash;&#7451;&#9889; Guild Command Center — Free Fire</footer>
 
 <script>
+
 const SUPABASE_URL = 'https://lipblkisjfbgysgteseh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpcGJsa2lzamZiZ3lzZ3Rlc2VoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM2MjEsImV4cCI6MjA5OTEwOTYyMX0.V16tP9fJojhZ4gD6_QeCDCR09T4Ng5hlZS5Luq16-uw';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -291,16 +421,26 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentSession = null;
 let currentProfile = null;
 
-const views = ['landing','apply','activate','login','dashboard'];
+const views = ['landing','apply','activate','login','dashboard','hq'];
 function showView(name){
   views.forEach(v => document.getElementById('view-'+v).classList.toggle('active', v === name));
   window.scrollTo(0,0);
 }
 
+async function ensureProfile(){
+  if(currentProfile) return currentProfile;
+  const { data: { user } } = await sb.auth.getUser();
+  if(!user) return null;
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  currentProfile = profile;
+  return profile;
+}
+
 function renderNav(){
   const nav = document.getElementById('navlinks');
   if(currentSession){
-    nav.innerHTML = `<a href="#dashboard">Dashboard</a><button id="nav-logout">Log Out</button>`;
+    const isStaff = currentProfile && (currentProfile.role === 'officer' || currentProfile.role === 'admin');
+    nav.innerHTML = `<a href="#dashboard">Dashboard</a>${isStaff ? '<a href="#hq">HQ</a>' : ''}<button id="nav-logout">Log Out</button>`;
     document.getElementById('nav-logout').onclick = doLogout;
   } else {
     nav.innerHTML = `<a href="#apply">Apply</a><a href="#activate">Activate</a><a class="cta" href="#login">Login</a>`;
@@ -313,6 +453,16 @@ async function route(){
     if(!currentSession){ location.hash = '#login'; return; }
     await loadDashboard();
     showView('dashboard');
+    return;
+  }
+  if(hash === 'hq'){
+    if(!currentSession){ location.hash = '#login'; return; }
+    const profile = await ensureProfile();
+    if(!profile || (profile.role !== 'officer' && profile.role !== 'admin')){
+      location.hash = '#dashboard'; return;
+    }
+    showView('hq');
+    initHQ();
     return;
   }
   showView(views.includes(hash) ? hash : 'landing');
@@ -401,6 +551,8 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     return;
   }
   currentSession = data.session;
+  currentProfile = null;
+  await ensureProfile();
   renderNav();
   location.hash = '#dashboard';
 });
@@ -414,6 +566,7 @@ async function doLogout(){
   location.hash = '#landing';
 }
 document.getElementById('logout-btn').addEventListener('click', doLogout);
+document.getElementById('hq-logout-btn').addEventListener('click', doLogout);
 
 // ---- DASHBOARD ----
 async function loadDashboard(){
@@ -442,7 +595,7 @@ async function loadDashboard(){
   if(announcements && announcements.length){
     list.innerHTML = announcements.map(a => `
       <div class="profile-row" style="display:block;">
-        <div style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;">${a.title}</div>
+        <div style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:15px;">${a.title}</div>
         <div style="color:var(--muted);font-size:13px;margin-top:3px;">${a.content}</div>
       </div>
     `).join('');
@@ -457,10 +610,247 @@ async function loadStats(){
   if(eventCount !== null) document.getElementById('stat-events').textContent = eventCount;
 }
 
+// ======================================================
+// HQ PORTAL (Officer / Admin)
+// ======================================================
+let hqInitialized = false;
+
+function initHQ(){
+  const isAdmin = currentProfile && currentProfile.role === 'admin';
+  document.getElementById('hq-role-note').textContent =
+    isAdmin ? 'Admin access — full control panel.' : 'Officer access — events, attendance, and applications view.';
+
+  // hide admin-only tabs for officers
+  document.querySelectorAll('.hq-tab').forEach(btn => {
+    if(btn.dataset.tab === 'members' || btn.dataset.tab === 'keys'){
+      btn.style.display = isAdmin ? '' : 'none';
+    }
+  });
+
+  if(!hqInitialized){
+    document.querySelectorAll('.hq-tab').forEach(btn => {
+      btn.addEventListener('click', () => switchHQTab(btn.dataset.tab));
+    });
+    document.getElementById('hq-event-form').addEventListener('submit', createEvent);
+    document.getElementById('hq-announce-form').addEventListener('submit', postAnnouncement);
+    document.getElementById('hq-generate-key-btn').addEventListener('click', generateRawKey);
+    hqInitialized = true;
+  }
+
+  switchHQTab('applications');
+}
+
+function switchHQTab(tab){
+  document.querySelectorAll('.hq-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.hq-panel').forEach(p => p.classList.toggle('active', p.id === 'hq-' + tab));
+  if(tab === 'applications') loadApplications();
+  if(tab === 'members') loadMembers();
+  if(tab === 'events') loadEventsHQ();
+  if(tab === 'announcements') loadAnnouncementsHQ();
+  if(tab === 'keys') loadKeys();
+}
+
+// ---- APPLICATIONS ----
+async function loadApplications(){
+  const list = document.getElementById('applications-list');
+  list.innerHTML = `<div class="empty">Loading...</div>`;
+  const { data: apps, error } = await sb.from('applications').select('*').order('created_at', { ascending:false }).limit(30);
+  if(error || !apps || !apps.length){
+    list.innerHTML = `<div class="empty">No applications yet.</div>`;
+    return;
+  }
+  const isAdmin = currentProfile.role === 'admin';
+  list.innerHTML = apps.map(a => `
+    <div class="list-card">
+      <div class="info">
+        <h4>${a.applicant_name} <span class="badge ${a.status==='approved'?'officer':(a.status==='rejected'?'admin':'member')}">${a.status}</span></h4>
+        <p>UID: ${a.ff_uid} · ${a.device || '—'} · ${a.region || '—'}<br>${a.experience || ''}</p>
+      </div>
+      ${isAdmin && a.status === 'pending' ? `
+      <div class="actions">
+        <button class="btn btn-sm btn-approve" onclick="approveApplication('${a.id}')">Approve</button>
+        <button class="btn btn-sm btn-reject" onclick="rejectApplication('${a.id}')">Reject</button>
+      </div>` : ''}
+    </div>
+  `).join('');
+}
+
+async function approveApplication(appId){
+  const msg = document.getElementById('hq-app-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  const { data: { user } } = await sb.auth.getUser();
+  const { data: keyRow, error: keyErr } = await sb.from('activation_keys')
+    .insert({ application_id: appId }).select().single();
+  if(keyErr){
+    msg.classList.add('show','error'); msg.textContent = 'Failed to generate key: ' + keyErr.message;
+    return;
+  }
+  await sb.from('applications').update({ status: 'approved', reviewed_by: user.id }).eq('id', appId);
+  msg.classList.add('show','ok'); msg.innerHTML = `Approved. Activation key: <span class="key-chip">${keyRow.key}</span> — send this to the applicant.`;
+  loadApplications();
+}
+
+async function rejectApplication(appId){
+  const { data: { user } } = await sb.auth.getUser();
+  await sb.from('applications').update({ status: 'rejected', reviewed_by: user.id }).eq('id', appId);
+  loadApplications();
+}
+
+// ---- MEMBERS ----
+async function loadMembers(){
+  const tbody = document.getElementById('members-tbody');
+  tbody.innerHTML = `<tr><td colspan="5" class="empty">Loading...</td></tr>`;
+  const { data: members, error } = await sb.from('profiles').select('*').order('join_date', { ascending:true });
+  if(error || !members || !members.length){
+    tbody.innerHTML = `<tr><td colspan="5" class="empty">No members found.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = members.map(m => `
+    <tr>
+      <td>${m.username}</td>
+      <td class="mono">${m.member_id}</td>
+      <td>${m.rank}</td>
+      <td>
+        <select onchange="updateMemberField('${m.id}','role',this.value)">
+          <option value="member" ${m.role==='member'?'selected':''}>Member</option>
+          <option value="officer" ${m.role==='officer'?'selected':''}>Officer</option>
+          <option value="admin" ${m.role==='admin'?'selected':''}>Admin</option>
+        </select>
+      </td>
+      <td>
+        <select onchange="updateMemberField('${m.id}','status',this.value)">
+          <option value="active" ${m.status==='active'?'selected':''}>Active</option>
+          <option value="inactive" ${m.status==='inactive'?'selected':''}>Inactive</option>
+          <option value="suspended" ${m.status==='suspended'?'selected':''}>Suspended</option>
+        </select>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function updateMemberField(memberId, field, value){
+  const msg = document.getElementById('hq-member-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  const { error } = await sb.from('profiles').update({ [field]: value }).eq('id', memberId);
+  if(error){
+    msg.classList.add('show','error'); msg.textContent = 'Update failed: ' + error.message;
+  } else {
+    msg.classList.add('show','ok'); msg.textContent = 'Member updated.';
+  }
+}
+
+// ---- EVENTS ----
+async function createEvent(e){
+  e.preventDefault();
+  const msg = document.getElementById('hq-event-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  const { data: { user } } = await sb.auth.getUser();
+  const { error } = await sb.from('events').insert({
+    title: document.getElementById('ev-title').value.trim(),
+    type: document.getElementById('ev-type').value,
+    event_date: document.getElementById('ev-date').value,
+    event_time: document.getElementById('ev-time').value,
+    description: document.getElementById('ev-desc').value.trim(),
+    created_by: user.id
+  });
+  if(error){
+    msg.classList.add('show','error'); msg.textContent = error.message;
+  } else {
+    msg.classList.add('show','ok'); msg.textContent = 'Event created.';
+    e.target.reset();
+    loadEventsHQ();
+  }
+}
+
+async function loadEventsHQ(){
+  const list = document.getElementById('events-list');
+  list.innerHTML = `<div class="empty">Loading...</div>`;
+  const { data: events } = await sb.from('events').select('*').order('event_date', { ascending:false }).limit(20);
+  if(!events || !events.length){
+    list.innerHTML = `<div class="empty">No events yet.</div>`;
+    return;
+  }
+  list.innerHTML = events.map(ev => `
+    <div class="list-card">
+      <div class="info">
+        <h4>${ev.title} <span class="badge officer">${ev.type}</span></h4>
+        <p>${ev.event_date} at ${ev.event_time} · ${ev.status}<br>${ev.description || ''}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ---- ANNOUNCEMENTS ----
+async function postAnnouncement(e){
+  e.preventDefault();
+  const msg = document.getElementById('hq-announce-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  const { data: { user } } = await sb.auth.getUser();
+  const { error } = await sb.from('announcements').insert({
+    title: document.getElementById('an-title').value.trim(),
+    content: document.getElementById('an-content').value.trim(),
+    author: user.id
+  });
+  if(error){
+    msg.classList.add('show','error'); msg.textContent = error.message;
+  } else {
+    msg.classList.add('show','ok'); msg.textContent = 'Announcement posted.';
+    e.target.reset();
+    loadAnnouncementsHQ();
+  }
+}
+
+async function loadAnnouncementsHQ(){
+  const list = document.getElementById('hq-announcements-list');
+  list.innerHTML = `<div class="empty">Loading...</div>`;
+  const { data: anns } = await sb.from('announcements').select('*').order('created_at', { ascending:false }).limit(20);
+  if(!anns || !anns.length){
+    list.innerHTML = `<div class="empty">No announcements yet.</div>`;
+    return;
+  }
+  list.innerHTML = anns.map(a => `
+    <div class="list-card">
+      <div class="info"><h4>${a.title}</h4><p>${a.content}</p></div>
+    </div>
+  `).join('');
+}
+
+// ---- ACTIVATION KEYS (admin only) ----
+async function generateRawKey(){
+  const msg = document.getElementById('hq-key-msg');
+  msg.className = 'msg'; msg.textContent = '';
+  const { data, error } = await sb.from('activation_keys').insert({}).select().single();
+  if(error){
+    msg.classList.add('show','error'); msg.textContent = error.message;
+  } else {
+    msg.classList.add('show','ok'); msg.innerHTML = `Generated: <span class="key-chip">${data.key}</span>`;
+    loadKeys();
+  }
+}
+
+async function loadKeys(){
+  const list = document.getElementById('keys-list');
+  list.innerHTML = `<div class="empty">Loading...</div>`;
+  const { data: keys } = await sb.from('activation_keys').select('*').order('created_at', { ascending:false }).limit(30);
+  if(!keys || !keys.length){
+    list.innerHTML = `<div class="empty">No keys generated yet.</div>`;
+    return;
+  }
+  list.innerHTML = keys.map(k => `
+    <div class="list-card">
+      <div class="info">
+        <h4><span class="key-chip">${k.key}</span> <span class="badge ${k.used?'admin':'officer'}">${k.used ? 'used' : 'unused'}</span></h4>
+        <p>Expires ${new Date(k.expires_at).toLocaleDateString()}</p>
+      </div>
+    </div>
+  `).join('');
+}
+
 // ---- INIT ----
 (async function init(){
   const { data: { session } } = await sb.auth.getSession();
   currentSession = session;
+  if(currentSession) await ensureProfile();
   renderNav();
   loadStats();
   route();
