@@ -198,9 +198,23 @@
   .hq-table select{background:var(--bg);color:var(--white);border:1px solid var(--line);padding:5px 8px;border-radius:3px;font-size:13px;}
   .key-chip{font-family:'JetBrains Mono',monospace;background:var(--panel-2);border:1px solid var(--line);padding:4px 10px;border-radius:3px;letter-spacing:0.05em;}
 
+  /* ROSTER GRID */
+  .roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;}
+  .roster-card{background:var(--panel);border:1px solid var(--line);padding:16px;text-align:center;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);}
+  .roster-card .avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 10px;background:var(--panel-2);border:2px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:28px;}
+  .roster-card .avatar img{width:100%;height:100%;object-fit:cover;}
+  .roster-card .name{font-weight:600;}
+  .roster-card .rank{font-size:12px;color:var(--muted);}
+
+  /* STATS CARDS */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:24px;}
+  .stat-card{background:var(--panel);border:1px solid var(--line);padding:20px;text-align:center;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);}
+  .stat-card .num{font-family:'Orbitron',sans-serif;font-size:32px;color:var(--gold);}
+  .stat-card .lbl{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;}
+
   footer{border-top:1px solid var(--line);padding:28px 24px;text-align:center;color:var(--muted);font-size:12px;}
 
-  /* ---- TOAST NOTIFICATIONS ---- */
+  /* TOAST */
   #toast-container{
     position:fixed;top:20px;right:20px;z-index:9999;
     display:flex;flex-direction:column;gap:12px;max-width:380px;width:100%;pointer-events:none;
@@ -211,13 +225,12 @@
     color:var(--white);font-size:0.9rem;font-weight:500;
     transform:translateX(110%);animation:slideIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
     display:flex;align-items:center;gap:10px;border:1px solid var(--line);
-    backdrop-filter:blur(4px);
   }
   .toast.hide{animation:slideOut 0.3s ease-in forwards;}
   .toast.success{border-left-color:#2ecc71;}
   .toast.error{border-left-color:#e74c3c;}
   .toast.warning{border-left-color:#f1c40f;}
-  .toast-icon{font-size:1.3rem;line-height:1;}
+  .toast-icon{font-size:1.3rem;}
   @keyframes slideIn{0%{transform:translateX(110%);opacity:0;}100%{transform:translateX(0);opacity:1;}}
   @keyframes slideOut{0%{transform:translateX(0);opacity:1;}100%{transform:translateX(110%);opacity:0;}}
 
@@ -229,12 +242,12 @@
     .dash-grid{grid-template-columns:1fr;}
     .navlinks{gap:2px;}
     .navlinks a, .navlinks button{padding:8px 10px;font-size:13px;}
+    .stats-grid{grid-template-columns:1fr 1fr;}
   }
 </style>
 </head>
 <body>
 
-<!-- Toast container -->
 <div id="toast-container"></div>
 
 <nav>
@@ -287,19 +300,8 @@
         <div class="field"><label>In-Game Name</label><input type="text" id="apply-name" placeholder="Your Free Fire nickname" required></div>
         <div class="field"><label>Free Fire UID</label><input type="text" id="apply-uid" placeholder="Your 12-digit UID" required></div>
         <div class="field"><label>Device</label><input type="text" id="apply-device" placeholder="e.g. iPhone 13, Redmi Note 12"></div>
-
-        <div class="field"><label>State</label>
-          <select id="apply-state" required>
-            <option value="">Select your state</option>
-          </select>
-        </div>
-
-        <div class="field"><label>Local Government Area</label>
-          <select id="apply-lga" required>
-            <option value="">Select your LGA</option>
-          </select>
-        </div>
-
+        <div class="field"><label>State</label><select id="apply-state" required><option value="">Select your state</option></select></div>
+        <div class="field"><label>Local Government Area</label><select id="apply-lga" required><option value="">Select your LGA</option></select></div>
         <div class="field"><label>Account Age</label>
           <select id="apply-account-age" required>
             <option value="">How long have you had this account?</option>
@@ -314,7 +316,6 @@
             <option value="8+ years">8+ years</option>
           </select>
         </div>
-
         <div class="field"><label>Play Style</label>
           <select id="apply-play-style" required>
             <option value="">Select your play style</option>
@@ -322,7 +323,6 @@
             <option value="Tapper">Tapper</option>
           </select>
         </div>
-
         <div class="field"><label>Playing Role</label>
           <select id="apply-playing-role" required>
             <option value="">Select your preferred role</option>
@@ -333,14 +333,8 @@
             <option value="Rifler">Rifler (Medium Range)</option>
           </select>
         </div>
-
-        <div class="field"><label>Experience</label>
-          <textarea id="apply-exp" placeholder="Previous guilds, rank, playstyle, why you want to join..."></textarea>
-        </div>
-
-        <button class="btn btn-primary btn-block" type="submit" id="apply-btn">
-          <span class="spinner"></span><span class="btn-text">Submit Application</span>
-        </button>
+        <div class="field"><label>Experience</label><textarea id="apply-exp" placeholder="Previous guilds, rank, playstyle, why you want to join..."></textarea></div>
+        <button class="btn btn-primary btn-block" type="submit" id="apply-btn"><span class="spinner"></span><span class="btn-text">Submit Application</span></button>
       </form>
     </div>
   </div>
@@ -354,18 +348,15 @@
       <div class="sub">Enter the one-time activation key given to you by an officer.</div>
       <div class="msg" id="activate-msg"></div>
       <form id="key-form">
+        <div class="field"><label>Username (the name you applied with)</label><input type="text" id="activate-username" placeholder="Your in-game name" required></div>
         <div class="field"><label>Activation Key</label><input type="text" id="activate-key" class="mono" placeholder="XXXXXXXXXX" required></div>
-        <button class="btn btn-primary btn-block" type="submit" id="verify-key-btn">
-          <span class="spinner"></span><span class="btn-text">Verify Key</span>
-        </button>
+        <button class="btn btn-primary btn-block" type="submit" id="verify-key-btn"><span class="spinner"></span><span class="btn-text">Verify Key</span></button>
       </form>
       <form id="register-form" style="display:none;margin-top:6px;">
         <div class="field"><label>Username</label><input type="text" id="reg-username" required></div>
         <div class="field"><label>Email</label><input type="email" id="reg-email" required></div>
         <div class="field"><label>Password</label><input type="password" id="reg-password" required minlength="6"></div>
-        <button class="btn btn-primary btn-block" type="submit" id="register-btn">
-          <span class="spinner"></span><span class="btn-text">Create Account</span>
-        </button>
+        <button class="btn btn-primary btn-block" type="submit" id="register-btn"><span class="spinner"></span><span class="btn-text">Create Account</span></button>
       </form>
       <div class="switch-link">Already registered? <a href="#login">Log in</a></div>
     </div>
@@ -382,9 +373,7 @@
       <form id="login-form">
         <div class="field"><label>Email</label><input type="email" id="login-email" required></div>
         <div class="field"><label>Password</label><input type="password" id="login-password" required></div>
-        <button class="btn btn-primary btn-block" type="submit" id="login-btn">
-          <span class="spinner"></span><span class="btn-text">Log In</span>
-        </button>
+        <button class="btn btn-primary btn-block" type="submit" id="login-btn"><span class="spinner"></span><span class="btn-text">Log In</span></button>
       </form>
       <div class="switch-link">Have an activation key? <a href="#activate">Activate account</a></div>
     </div>
@@ -395,10 +384,7 @@
 <section class="view" id="view-dashboard">
   <div class="section wrap">
     <div class="dash-head">
-      <div>
-        <h2>Welcome back<span id="dash-username">.</span></h2>
-        <div class="sub">Your guild status at a glance.</div>
-      </div>
+      <div><h2>Welcome back<span id="dash-username">.</span></h2><div class="sub">Your guild status at a glance.</div></div>
       <button class="btn btn-danger" id="logout-btn">Log Out</button>
     </div>
     <div class="dash-grid">
@@ -414,41 +400,81 @@
   </div>
 </section>
 
+<!-- ROSTER (Member View) -->
+<section class="view" id="view-roster">
+  <div class="section wrap">
+    <div class="dash-head">
+      <div><h2>Guild Roster</h2><div class="sub">All active members of DeadShot.</div></div>
+    </div>
+    <div id="roster-container"><div class="empty">Loading members...</div></div>
+  </div>
+</section>
+
+<!-- EVENTS (Member View) -->
+<section class="view" id="view-events">
+  <div class="section wrap">
+    <div class="dash-head">
+      <div><h2>Upcoming Events</h2><div class="sub">View and register for guild events.</div></div>
+    </div>
+    <div id="events-container"><div class="empty">Loading events...</div></div>
+  </div>
+</section>
+
+<!-- PROFILE (Member Edit) -->
+<section class="view" id="view-profile">
+  <div class="section wrap">
+    <div class="dash-head">
+      <div><h2>My Profile</h2><div class="sub">Edit your guild profile.</div></div>
+    </div>
+    <div class="card">
+      <form id="profile-form">
+        <div class="field"><label>Member ID</label><input type="text" id="prof-member-id" disabled style="opacity:0.7;"></div>
+        <div class="field"><label>Username</label><input type="text" id="prof-username" disabled style="opacity:0.7;"></div>
+        <div class="field"><label>Nickname</label><input type="text" id="prof-nickname" placeholder="Your display name"></div>
+        <div class="field"><label>Free Fire UID</label><input type="text" id="prof-uid" placeholder="Your Free Fire UID"></div>
+        <div class="field"><label>Avatar URL</label><input type="url" id="prof-avatar" placeholder="https://example.com/avatar.jpg"></div>
+        <div class="field"><label>Role</label><input type="text" id="prof-role" disabled style="opacity:0.7;"></div>
+        <div class="field"><label>Rank</label><input type="text" id="prof-rank" disabled style="opacity:0.7;"></div>
+        <button class="btn btn-primary" type="submit" id="profile-save-btn"><span class="spinner"></span><span class="btn-text">Save Profile</span></button>
+      </form>
+      <hr style="border-color:var(--line);margin:24px 0;">
+      <h3>Change Password</h3>
+      <form id="password-form">
+        <div class="field"><label>New Password</label><input type="password" id="new-password" placeholder="Min 6 characters" required minlength="6"></div>
+        <button class="btn btn-primary" type="submit" id="password-btn"><span class="spinner"></span><span class="btn-text">Update Password</span></button>
+      </form>
+    </div>
+  </div>
+</section>
+
 <!-- HQ (OFFICER / ADMIN) -->
 <section class="view" id="view-hq">
   <div class="section wrap">
     <div class="dash-head">
-      <div>
-        <h2>Guild HQ</h2>
-        <div class="sub" id="hq-role-note">Officer / Admin control panel.</div>
-      </div>
+      <div><h2>Guild HQ</h2><div class="sub" id="hq-role-note">Officer / Admin control panel.</div></div>
       <button class="btn btn-danger" id="hq-logout-btn">Log Out</button>
     </div>
-
     <div class="hq-tabs" id="hq-tabs">
       <button class="hq-tab active" data-tab="applications">Applications</button>
       <button class="hq-tab" data-tab="members">Members</button>
       <button class="hq-tab" data-tab="events">Events</button>
       <button class="hq-tab" data-tab="announcements">Announcements</button>
-      <button class="hq-tab" data-tab="keys">Activation Keys</button>
+      <button class="hq-tab" data-tab="keys">Keys</button>
+      <button class="hq-tab" data-tab="stats">Stats</button>
     </div>
 
-    <!-- APPLICATIONS TAB -->
     <div class="hq-panel active" id="hq-applications">
       <div class="msg" id="hq-app-msg"></div>
       <div id="applications-list"><div class="empty">Loading applications...</div></div>
     </div>
 
-    <!-- MEMBERS TAB -->
     <div class="hq-panel" id="hq-members">
       <div class="msg" id="hq-member-msg"></div>
-      <div class="table-wrap"><table class="hq-table" id="members-table">
-        <thead><tr><th>Username</th><th>Member ID</th><th>Rank</th><th>Role</th><th>Status</th></tr></thead>
-        <tbody id="members-tbody"><tr><td colspan="5" class="empty">Loading members...</td></tr></tbody>
+      <div class="table-wrap"><table class="hq-table"><thead><tr><th>Username</th><th>Member ID</th><th>Rank</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="members-tbody"><tr><td colspan="6" class="empty">Loading members...</td></tr></tbody>
       </table></div>
     </div>
 
-    <!-- EVENTS TAB -->
     <div class="hq-panel" id="hq-events">
       <div class="card" style="margin-bottom:20px;">
         <h3>Create Event</h3>
@@ -456,24 +482,17 @@
         <form id="hq-event-form">
           <div class="field"><label>Title</label><input type="text" id="ev-title" required></div>
           <div class="field"><label>Type</label>
-            <select id="ev-type">
-              <option value="war">War</option><option value="scrim">Scrim</option>
-              <option value="tournament">Tournament</option><option value="meeting">Meeting</option>
-              <option value="training">Training</option>
-            </select>
+            <select id="ev-type"><option value="war">War</option><option value="scrim">Scrim</option><option value="tournament">Tournament</option><option value="meeting">Meeting</option><option value="training">Training</option></select>
           </div>
           <div class="field"><label>Date</label><input type="date" id="ev-date" required></div>
           <div class="field"><label>Time</label><input type="time" id="ev-time" required></div>
           <div class="field"><label>Description</label><textarea id="ev-desc"></textarea></div>
-          <button class="btn btn-primary btn-block" type="submit" id="hq-event-btn">
-            <span class="spinner"></span><span class="btn-text">Create Event</span>
-          </button>
+          <button class="btn btn-primary btn-block" type="submit" id="hq-event-btn"><span class="spinner"></span><span class="btn-text">Create Event</span></button>
         </form>
       </div>
       <div id="events-list"><div class="empty">Loading events...</div></div>
     </div>
 
-    <!-- ANNOUNCEMENTS TAB -->
     <div class="hq-panel" id="hq-announcements">
       <div class="card" style="margin-bottom:20px;">
         <h3>Post Announcement</h3>
@@ -481,24 +500,30 @@
         <form id="hq-announce-form">
           <div class="field"><label>Title</label><input type="text" id="an-title" required></div>
           <div class="field"><label>Content</label><textarea id="an-content" required></textarea></div>
-          <button class="btn btn-primary btn-block" type="submit" id="hq-announce-btn">
-            <span class="spinner"></span><span class="btn-text">Post Announcement</span>
-          </button>
+          <button class="btn btn-primary btn-block" type="submit" id="hq-announce-btn"><span class="spinner"></span><span class="btn-text">Post Announcement</span></button>
         </form>
       </div>
       <div id="hq-announcements-list"><div class="empty">Loading announcements...</div></div>
     </div>
 
-    <!-- KEYS TAB (admin only) -->
     <div class="hq-panel" id="hq-keys">
       <div class="card" style="margin-bottom:20px;">
         <h3>Generate Activation Key</h3>
         <div class="msg" id="hq-key-msg"></div>
-        <button class="btn btn-primary" id="hq-generate-key-btn">
-          <span class="spinner"></span><span class="btn-text">Generate New Key</span>
-        </button>
+        <button class="btn btn-primary" id="hq-generate-key-btn"><span class="spinner"></span><span class="btn-text">Generate New Key</span></button>
       </div>
       <div id="keys-list"><div class="empty">Loading keys...</div></div>
+    </div>
+
+    <div class="hq-panel" id="hq-stats">
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="num" id="stat-total-members">-</div><div class="lbl">Total Members</div></div>
+        <div class="stat-card"><div class="num" id="stat-active-members">-</div><div class="lbl">Active Members</div></div>
+        <div class="stat-card"><div class="num" id="stat-total-events">-</div><div class="lbl">Total Events</div></div>
+        <div class="stat-card"><div class="num" id="stat-attendance-rate">-</div><div class="lbl">Attendance Rate</div></div>
+        <div class="stat-card"><div class="num" id="stat-members-role">-</div><div class="lbl">Members / Officers / Admins</div></div>
+        <div class="stat-card"><div class="num" id="stat-new-members">-</div><div class="lbl">New Members (30d)</div></div>
+      </div>
     </div>
   </div>
 </section>
@@ -506,7 +531,7 @@
 <footer>D&#7431;&#7429;dS&#688;&oslash;&#7451;&#9889; Guild Command Center — Free Fire</footer>
 
 <script>
-// ========== TOAST SYSTEM ==========
+// ========== TOAST ==========
 function showToast(message, type='info', duration=4500){
   const container = document.getElementById('toast-container');
   const iconMap = { success:'✅', error:'❌', warning:'⚠️', info:'📢' };
@@ -514,33 +539,24 @@ function showToast(message, type='info', duration=4500){
   toast.className = `toast ${type}`;
   toast.innerHTML = `<span class="toast-icon">${iconMap[type]||'📢'}</span><span>${message}</span>`;
   container.appendChild(toast);
-  setTimeout(() => {
-    toast.classList.add('hide');
-    setTimeout(() => toast.remove(), 400);
-  }, duration);
+  setTimeout(() => { toast.classList.add('hide'); setTimeout(() => toast.remove(), 400); }, duration);
 }
 
-// ========== LOADING HELPER ==========
 function setLoading(btn, loading){
   if(!btn) return;
-  if(loading){
-    btn.classList.add('loading');
-    btn.disabled = true;
-  }else{
-    btn.classList.remove('loading');
-    btn.disabled = false;
-  }
+  if(loading){ btn.classList.add('loading'); btn.disabled = true; }
+  else { btn.classList.remove('loading'); btn.disabled = false; }
 }
 
-// ========== SUPABASE INIT ==========
+// ========== SUPABASE ==========
 const SUPABASE_URL = 'https://lipblkisjfbgysgteseh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpcGJsa2lzamZiZ3lzZ3Rlc2VoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1MzM2MjEsImV4cCI6MjA5OTEwOTYyMX0.V16tP9fJojhZ4gD6_QeCDCR09T4Ng5hlZS5Luq16-uw';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentSession = null;
 let currentProfile = null;
+const views = ['landing','apply','activate','login','dashboard','roster','events','profile','hq'];
 
-const views = ['landing','apply','activate','login','dashboard','hq'];
 function showView(name){
   views.forEach(v => document.getElementById('view-'+v).classList.toggle('active', v === name));
   window.scrollTo(0,0);
@@ -559,7 +575,14 @@ function renderNav(){
   const nav = document.getElementById('navlinks');
   if(currentSession){
     const isStaff = currentProfile && (currentProfile.role === 'officer' || currentProfile.role === 'admin');
-    nav.innerHTML = `<a href="#dashboard">Dashboard</a>${isStaff ? '<a href="#hq">HQ</a>' : ''}<button id="nav-logout">Log Out</button>`;
+    nav.innerHTML = `
+      <a href="#dashboard">Dashboard</a>
+      <a href="#roster">Roster</a>
+      <a href="#events">Events</a>
+      <a href="#profile">Profile</a>
+      ${isStaff ? '<a href="#hq">HQ</a>' : ''}
+      <button id="nav-logout">Log Out</button>
+    `;
     document.getElementById('nav-logout').onclick = doLogout;
   } else {
     nav.innerHTML = `<a href="#apply">Apply</a><a href="#activate">Activate</a><a class="cta" href="#login">Login</a>`;
@@ -568,102 +591,84 @@ function renderNav(){
 
 async function route(){
   const hash = (location.hash || '#landing').replace('#','');
-  if(hash === 'dashboard'){
+  if(hash === 'dashboard' || hash === 'roster' || hash === 'events' || hash === 'profile'){
     if(!currentSession){ location.hash = '#login'; return; }
-    await loadDashboard();
-    showView('dashboard');
-    return;
+    if(hash === 'dashboard') { await loadDashboard(); showView('dashboard'); return; }
+    if(hash === 'roster') { loadRoster(); showView('roster'); return; }
+    if(hash === 'events') { loadEvents(); showView('events'); return; }
+    if(hash === 'profile') { loadProfileForm(); showView('profile'); return; }
   }
   if(hash === 'hq'){
     if(!currentSession){ location.hash = '#login'; return; }
     const profile = await ensureProfile();
-    if(!profile || (profile.role !== 'officer' && profile.role !== 'admin')){
-      location.hash = '#dashboard'; return;
-    }
-    showView('hq');
-    initHQ();
-    return;
+    if(!profile || (profile.role !== 'officer' && profile.role !== 'admin')){ location.hash = '#dashboard'; return; }
+    showView('hq'); initHQ(); return;
   }
   showView(views.includes(hash) ? hash : 'landing');
 }
 window.addEventListener('hashchange', route);
 
-// ============================================================
-// NIGERIAN STATES + LGAs (from your PDF)
-// ============================================================
+// ========== NIGERIAN STATES + LGAs ==========
 const NIGERIA_DATA = {
-  "Abia": ["Aba North","Aba South","Arochukwu","Bende","Ikwuano","Isiala-Ngwa North","Isiala-Ngwa South","Isuikwato","Obi Nwa","Ohafia","Osisioma","Ngwa","Ugwunagbo","Ukwa East","Ukwa West","Umuahia North","Umuahia South","Umu-Neochi"],
-  "Adamawa": ["Demsa","Fufore","Ganaye","Gireri","Gombi","Guyuk","Hong","Jada","Lamurde","Madagali","Maiha","Mayo-Belwa","Michika","Mubi North","Mubi South","Numan","Shelleng","Song","Toungo","Yola North","Yola South"],
-  "Anambra": ["Aguata","Anambra East","Anambra West","Anaocha","Awka North","Awka South","Ayamelum","Dunukofia","Ekwusigo","Idemili North","Idemili South","Ihiala","Njikoka","Nnewi North","Nnewi South","Ogbaru","Onitsha North","Onitsha South","Orumba North","Orumba South","Oyi"],
-  "Akwa Ibom": ["Abak","Eastern Obolo","Eket","Esit Eket","Essien Udim","Etim Ekpo","Etinan","Ibeno","Ibesikpo Asutan","Ibiono Ibom","Ika","Ikono","Ikot Abasi","Ikot Ekpene","Ini","Itu","Mbo","Mkpat Enin","Nsit Atai","Nsit Ibom","Nsit Ubium","Obot Akara","Okobo","Onna","Oron","Oruk Anam","Udung Uko","Ukanafun","Uruan","Urue-Offong/Oruko","Uyo"],
-  "Bauchi": ["Alkaleri","Bauchi","Bogoro","Damban","Darazo","Dass","Ganjuwa","Giade","Itas/Gadau","Jama'are","Katagum","Kirfi","Misau","Ningi","Shira","Tafawa-Balewa","Toro","Warji","Zaki"],
-  "Bayelsa": ["Brass","Ekeremor","Kolokuma/Opokuma","Nembe","Ogbia","Sagbama","Southern Jaw","Yenegoa"],
-  "Benue": ["Ado","Agatu","Apa","Buruku","Gboko","Guma","Gwer East","Gwer West","Katsina-Ala","Konshisha","Kwande","Logo","Makurdi","Obi","Ogbadibo","Oju","Okpokwu","Ohimini","Oturkpo","Tarka","Ukum","Ushongo","Vandeikya"],
-  "Borno": ["Abadam","Askira/Uba","Bama","Bayo","Biu","Chibok","Damboa","Dikwa","Gubio","Guzamala","Gwoza","Hawul","Jere","Kaga","Kala/Balge","Konduga","Kukawa","Kwaya Kusar","Mafa","Magumeri","Maiduguri","Marte","Mobbar","Monguno","Ngala","Nganzai","Shani"],
-  "Cross River": ["Akpabuyo","Odukpani","Akamkpa","Biase","Abi","Ikom","Yarkur","Odubra","Boki","Ogoja","Yala","Obanliku","Obudu","Calabar South","Etung","Bekwara","Bakassi","Calabar Municipality"],
-  "Delta": ["Oshimili","Aniocha","Aniocha South","Ika South","Ika North-East","Ndokwa West","Ndokwa East","Isoko South","Isoko North","Bomadi","Burutu","Ughelli South","Ughelli North","Ethiope West","Ethiope East","Sapele","Okpe","Warri North","Warri South","Uvwie","Udu","Warri Central","Ukwani","Oshimili North","Patani"],
-  "Ebonyi": ["Edda","Afikpo","Onicha","Ohaozara","Abakaliki","Ishielu","Ikwo","Ezza","Ezza South","Ohaukwu","Ebonyi","Ivo"],
-  "Enugu": ["Enugu South","Igbo-Eze South","Enugu North","Nkanu","Udi Agwu","Oji-River","Ezeagu","IgboEze North","Isi-Uzo","Nsukka","Igbo-Ekiti","Uzo-Uwani","Enugu East","Aninri","Nkanu East","Udenu"],
-  "Edo": ["Esan North-East","Esan Central","Esan West","Egor","Ukpoba","Central","Etsako Central","Igueben","Oredo","Ovia South-West","Ovia South-East","Orhionwon","Uhunmwonde","Etsako East","Esan South-East"],
-  "Ekiti": ["Ado","Ekiti-East","Ekiti-West","Emure/Ise/Orun","Ekiti South-West","Ikere","Irepodun","Ijero","Ido/Osi","Oye","Ikole","Moba","Gbonyin","Efon","Ise/Orun","Ilejemeeje"],
-  "FCT": ["Abaji","Abuja Municipal","Bwari","Gwagwalada","Kuje","Kwali"],
-  "Gombe": ["Akko","Balanga","Billiri","Dukku","Kaltungo","Kwami","Shomgom","Funakaye","Gombe","Nafada/Bajoga","Yamaltu/Delta"],
-  "Imo": ["Aboh-Mbaise","Ahiazu-Mbaise","Ehime-Mbano","Ezinihitte","Ideato North","Ideato South","Ihitte/Uboma","Ikeduru","Isiala Mbano","Isu","Mbaitali","Ngor-Okpala","Njaba","Nwangele","Nkwerre","Obowo","Oguta","Ohaji/Egbema","Okigwe","Orlu","Orsu","Oru East","Oru West","Owerri-Municipal","Owerri North","Owerri West"],
-  "Jigawa": ["Auyo","Babura","Birni Kudu","Biriniwa","Buji","Dutse","Gagarawa","Garki","Gumel","Guri","Gwaram","Gwiiwa","Hadejia","Jahun","Kafin Hausa","Kaugama Kazaure","Kiri Kasamma","Kiyawa","Maigatari","Malam Madori","Miga","Ringim","Roni","Sule-Tankarkar","Taura","Yankwashi"],
-  "Kaduna": ["Birni-Gwari","Chikun","Giwa","Igabi","Ikara","Jaba","Jema'a","Kachia","Kaduna North","Kaduna South","Kagarko","Kajuru","Kaura","Kauru","Kubau","Kudan","Lere","Makarfi","Sabon-Gari","Sanga","Soba","Zango-Kataf","Zaria"],
-  "Kano": ["Ajingi","Albasu","Bagwai","Bebeji","Bichi","Bunkure","Dala","Dambatta","Dawakin Kudu","Dawakin Tofa","Doguwa","Fagge","Gabasawa","Garko","Garum","Mallam","Gaya","Gezawa","Gwale","Gwazo","Kabo","Kano Municipal","Karaye","Kibiya","Kiru","Kumbotso","Ghari","Kura","Madobi","Makoda","Minjibir","Nasarawa","Rano","Rimin Gado","Rogo","Shanono","Sumaila","Takali","Tarauni","Tofa","Tsanyawa","Tudun Wada","Ungogo","Warawa","Wudil"],
-  "Katsina": ["Bakori","Batagarawa","Batsari","Baure","Bindawa","Charanchi","Dandume","Danja","Dan Musa","Daura","Dutsi","Dutsin-Ma","Faskari","Funtua","Ingawa","Jibia","Kafur","Kaita","Kankara","Kankia","Katsina","Kurfi","Kusada","Mai'Adua","Malumfashi","Mani","Mashi","Matazuu","Musawa","Rimi","Sabuwa","Safana","Sandamu","Zango"],
-  "Kebbi": ["Aleiro","Arewa-Dandi","Argungu","Augie","Bagudo","Birnin Kebbi","Bunza","Dandi","Fakai","Gwandu","Jega","Kalgo","Koko/Besse","Maiyama","Ngaski","Sakaba","Shanga","Suru","Wasagu/Danko","Yauri","Zuru"],
-  "Kogi": ["Adavi","Ajaokuta","Ankpa","Bassa","Dekina","Ibaji","Idah","Igalamela-Odolu","Ijumu","Kabba/Bunu","Kogi","Lokoja","Mopa-Muro","Ofu","Ogori/Mangongo","Okehi","Okene","Olamabolo","Omala","Yagba East","Yagba West"],
-  "Kwara": ["Asa","Baruten","Edu","Ekiti","Ifelodun","Ilorin East","Ilorin West","Irepodun","Isin","Kaiama","Moro","Offa","Oke-Ero","Oyun","Pategi"],
-  "Lagos": ["Agege","Ajeromi-Ifelodun","Alimosho","Amuwo-Odofin","Apapa","Badagry","Epe","Eti-Osa","Ibeju/Lekki","Ifako-Ijaye","Ikeja","Ikorodu","Kosofe","Lagos Island","Lagos Mainland","Mushin","Ojo","Oshodi-Isolo","Shomolu","Surulere"],
-  "Nasarawa": ["Akwanga","Awe","Doma","Karu","Keana","Keffi","Kokona","Lafia","Nasarawa","Nasarawa-Eggon","Obi","Toto","Wamba"],
-  "Niger": ["Agaie","Agwara","Bida","Borgu","Bosso","Chanchaga","Edati","Gbako","Gurara","Katcha","Kontagora","Lapai","Lavun","Magama","Mariga","Mashegu","Mokwa","Muya","Pailoro","Rafi","Rijau","Shiroro","Suleja","Tafa","Wushishi"],
-  "Ogun": ["Abeokuta North","Abeokuta South","Ado-Odo/Ota","Yewa North","Yewa South","Ewekoro","Ifo","Ijebu East","Ijebu North","Ijebu North East","Ijebu Ode","Ikenne","Imeko-Afon","Ipokia","Obafemi-Owode","Ogun Waterside","Odeda","Odogbolu","Remo North","Shagamu"],
-  "Ondo": ["Akoko North East","Akoko North West","Akoko South Akure East","Akoko South West","Akure North","Akure South","Ese-Odo","Idanre","Ifedore","Ilaje","Ile-Oluji","Okeigbo","Irele","Odigbo","Okitipupa","Ondo East","Ondo West","Ose","Owo"],
-  "Osun": ["Aiyedade","Aiyedire","Atakumosa East","Atakumosa West","Boluwaduro","Boripe","Ede North","Ede South","Egbedore","Ejigbo","Ife Central","Ife East","Ife North","Ife South","Ifedayo","Ifelodun","Ila","Ilesha East","Ilesha West","Irepodun","Irewole","Isokan","Iwo","Obokun","Odo-Otin","Ola-Oluwa","Olorunda","Oriade","Orolu","Osogbo"],
-  "Oyo": ["Afijio","Akinyele","Atiba","Atisbo","Egbeda","Ibadan Central","Ibadan North","Ibadan North West","Ibadan South East","Ibadan South West","Ibarapa Central","Ibarapa East","Ibarapa North","Ido","Irepo","Iseyin","Itesiwaju","Iwajowa","Kajola","Lagelu Ogbomosho North","Ogbomosho South","Ogo Oluwa","Olorunsogo","Oluyole","Ona-Ara","Orelope","Ori Ire","Oyo East","Oyo West","Saki East","Saki West","Surulere"],
-  "Plateau": ["Barikin Ladi","Bassa","Bokkos","Jos East","Jos North","Jos South","Kanam","Kanke","Langtang North","Langtang South","Mangu","Mikang","Pankshin","Qua'an Pan","Riyom","Shendam","Wase"],
-  "Rivers": ["Abua/Odual","Ahooda East","Ahooda West","Akuku Toru","Andoni","Asari-Toru","Bonny","Degema","Emohua","Eleme","Etche","Gokana","Ikwerre","Khana","Obio/Akpor","Ogba/Egbema/Ndoni","Ogu/Bolo","Okrika","Omumma","Opobo/Nkoro","Oyigbo","Port-Harcourt","Tai"],
-  "Sokoto": ["Binji","Bodinga","Dange-shnsi","Gada","Goronyo","Gudu","Gawabawa","Illela","Isa","Kware","Kebbe","Rabah","Sabon birni","Shagari","Silame","Sokoto North","Sokoto South","Tambuwal","Tqngaza","Tureta","Wamako","Wurno","Yabo"],
-  "Taraba": ["Ardo-kola","Bali","Donga","Gashaka","Cassol","Ibi","Jalingo","Karin-Lamido","Kurmi","Lau","Sardauña","Takum","Ussa","Wukari","Yorro","Zing"],
-  "Yobe": ["Bade","Bursari","Damaturu","Fika","Fune","Geidam","Gujba","Gulani","Jakusko","Karasuwa","Karawa","Machina","Nangere","Nguru Potiskum","Tarmua","Yunusari","Yusufari"],
-  "Zamfara": ["Anka","Bakura","Birnin Magaji","Bukkuyum","Bungudu","Gummi","Gusau","Kaura","Namoda","Maradun","Maru","Shinkafi","Talata Mafara","Tsafe","Zurmi"]
+  "Abia":["Aba North","Aba South","Arochukwu","Bende","Ikwuano","Isiala-Ngwa North","Isiala-Ngwa South","Isuikwato","Obi Nwa","Ohafia","Osisioma","Ngwa","Ugwunagbo","Ukwa East","Ukwa West","Umuahia North","Umuahia South","Umu-Neochi"],
+  "Adamawa":["Demsa","Fufore","Ganaye","Gireri","Gombi","Guyuk","Hong","Jada","Lamurde","Madagali","Maiha","Mayo-Belwa","Michika","Mubi North","Mubi South","Numan","Shelleng","Song","Toungo","Yola North","Yola South"],
+  "Anambra":["Aguata","Anambra East","Anambra West","Anaocha","Awka North","Awka South","Ayamelum","Dunukofia","Ekwusigo","Idemili North","Idemili South","Ihiala","Njikoka","Nnewi North","Nnewi South","Ogbaru","Onitsha North","Onitsha South","Orumba North","Orumba South","Oyi"],
+  "Akwa Ibom":["Abak","Eastern Obolo","Eket","Esit Eket","Essien Udim","Etim Ekpo","Etinan","Ibeno","Ibesikpo Asutan","Ibiono Ibom","Ika","Ikono","Ikot Abasi","Ikot Ekpene","Ini","Itu","Mbo","Mkpat Enin","Nsit Atai","Nsit Ibom","Nsit Ubium","Obot Akara","Okobo","Onna","Oron","Oruk Anam","Udung Uko","Ukanafun","Uruan","Urue-Offong/Oruko","Uyo"],
+  "Bauchi":["Alkaleri","Bauchi","Bogoro","Damban","Darazo","Dass","Ganjuwa","Giade","Itas/Gadau","Jama'are","Katagum","Kirfi","Misau","Ningi","Shira","Tafawa-Balewa","Toro","Warji","Zaki"],
+  "Bayelsa":["Brass","Ekeremor","Kolokuma/Opokuma","Nembe","Ogbia","Sagbama","Southern Jaw","Yenegoa"],
+  "Benue":["Ado","Agatu","Apa","Buruku","Gboko","Guma","Gwer East","Gwer West","Katsina-Ala","Konshisha","Kwande","Logo","Makurdi","Obi","Ogbadibo","Oju","Okpokwu","Ohimini","Oturkpo","Tarka","Ukum","Ushongo","Vandeikya"],
+  "Borno":["Abadam","Askira/Uba","Bama","Bayo","Biu","Chibok","Damboa","Dikwa","Gubio","Guzamala","Gwoza","Hawul","Jere","Kaga","Kala/Balge","Konduga","Kukawa","Kwaya Kusar","Mafa","Magumeri","Maiduguri","Marte","Mobbar","Monguno","Ngala","Nganzai","Shani"],
+  "Cross River":["Akpabuyo","Odukpani","Akamkpa","Biase","Abi","Ikom","Yarkur","Odubra","Boki","Ogoja","Yala","Obanliku","Obudu","Calabar South","Etung","Bekwara","Bakassi","Calabar Municipality"],
+  "Delta":["Oshimili","Aniocha","Aniocha South","Ika South","Ika North-East","Ndokwa West","Ndokwa East","Isoko South","Isoko North","Bomadi","Burutu","Ughelli South","Ughelli North","Ethiope West","Ethiope East","Sapele","Okpe","Warri North","Warri South","Uvwie","Udu","Warri Central","Ukwani","Oshimili North","Patani"],
+  "Ebonyi":["Edda","Afikpo","Onicha","Ohaozara","Abakaliki","Ishielu","Ikwo","Ezza","Ezza South","Ohaukwu","Ebonyi","Ivo"],
+  "Enugu":["Enugu South","Igbo-Eze South","Enugu North","Nkanu","Udi Agwu","Oji-River","Ezeagu","IgboEze North","Isi-Uzo","Nsukka","Igbo-Ekiti","Uzo-Uwani","Enugu East","Aninri","Nkanu East","Udenu"],
+  "Edo":["Esan North-East","Esan Central","Esan West","Egor","Ukpoba","Central","Etsako Central","Igueben","Oredo","Ovia South-West","Ovia South-East","Orhionwon","Uhunmwonde","Etsako East","Esan South-East"],
+  "Ekiti":["Ado","Ekiti-East","Ekiti-West","Emure/Ise/Orun","Ekiti South-West","Ikere","Irepodun","Ijero","Ido/Osi","Oye","Ikole","Moba","Gbonyin","Efon","Ise/Orun","Ilejemeeje"],
+  "FCT":["Abaji","Abuja Municipal","Bwari","Gwagwalada","Kuje","Kwali"],
+  "Gombe":["Akko","Balanga","Billiri","Dukku","Kaltungo","Kwami","Shomgom","Funakaye","Gombe","Nafada/Bajoga","Yamaltu/Delta"],
+  "Imo":["Aboh-Mbaise","Ahiazu-Mbaise","Ehime-Mbano","Ezinihitte","Ideato North","Ideato South","Ihitte/Uboma","Ikeduru","Isiala Mbano","Isu","Mbaitali","Ngor-Okpala","Njaba","Nwangele","Nkwerre","Obowo","Oguta","Ohaji/Egbema","Okigwe","Orlu","Orsu","Oru East","Oru West","Owerri-Municipal","Owerri North","Owerri West"],
+  "Jigawa":["Auyo","Babura","Birni Kudu","Biriniwa","Buji","Dutse","Gagarawa","Garki","Gumel","Guri","Gwaram","Gwiiwa","Hadejia","Jahun","Kafin Hausa","Kaugama Kazaure","Kiri Kasamma","Kiyawa","Maigatari","Malam Madori","Miga","Ringim","Roni","Sule-Tankarkar","Taura","Yankwashi"],
+  "Kaduna":["Birni-Gwari","Chikun","Giwa","Igabi","Ikara","Jaba","Jema'a","Kachia","Kaduna North","Kaduna South","Kagarko","Kajuru","Kaura","Kauru","Kubau","Kudan","Lere","Makarfi","Sabon-Gari","Sanga","Soba","Zango-Kataf","Zaria"],
+  "Kano":["Ajingi","Albasu","Bagwai","Bebeji","Bichi","Bunkure","Dala","Dambatta","Dawakin Kudu","Dawakin Tofa","Doguwa","Fagge","Gabasawa","Garko","Garum","Mallam","Gaya","Gezawa","Gwale","Gwazo","Kabo","Kano Municipal","Karaye","Kibiya","Kiru","Kumbotso","Ghari","Kura","Madobi","Makoda","Minjibir","Nasarawa","Rano","Rimin Gado","Rogo","Shanono","Sumaila","Takali","Tarauni","Tofa","Tsanyawa","Tudun Wada","Ungogo","Warawa","Wudil"],
+  "Katsina":["Bakori","Batagarawa","Batsari","Baure","Bindawa","Charanchi","Dandume","Danja","Dan Musa","Daura","Dutsi","Dutsin-Ma","Faskari","Funtua","Ingawa","Jibia","Kafur","Kaita","Kankara","Kankia","Katsina","Kurfi","Kusada","Mai'Adua","Malumfashi","Mani","Mashi","Matazuu","Musawa","Rimi","Sabuwa","Safana","Sandamu","Zango"],
+  "Kebbi":["Aleiro","Arewa-Dandi","Argungu","Augie","Bagudo","Birnin Kebbi","Bunza","Dandi","Fakai","Gwandu","Jega","Kalgo","Koko/Besse","Maiyama","Ngaski","Sakaba","Shanga","Suru","Wasagu/Danko","Yauri","Zuru"],
+  "Kogi":["Adavi","Ajaokuta","Ankpa","Bassa","Dekina","Ibaji","Idah","Igalamela-Odolu","Ijumu","Kabba/Bunu","Kogi","Lokoja","Mopa-Muro","Ofu","Ogori/Mangongo","Okehi","Okene","Olamabolo","Omala","Yagba East","Yagba West"],
+  "Kwara":["Asa","Baruten","Edu","Ekiti","Ifelodun","Ilorin East","Ilorin West","Irepodun","Isin","Kaiama","Moro","Offa","Oke-Ero","Oyun","Pategi"],
+  "Lagos":["Agege","Ajeromi-Ifelodun","Alimosho","Amuwo-Odofin","Apapa","Badagry","Epe","Eti-Osa","Ibeju/Lekki","Ifako-Ijaye","Ikeja","Ikorodu","Kosofe","Lagos Island","Lagos Mainland","Mushin","Ojo","Oshodi-Isolo","Shomolu","Surulere"],
+  "Nasarawa":["Akwanga","Awe","Doma","Karu","Keana","Keffi","Kokona","Lafia","Nasarawa","Nasarawa-Eggon","Obi","Toto","Wamba"],
+  "Niger":["Agaie","Agwara","Bida","Borgu","Bosso","Chanchaga","Edati","Gbako","Gurara","Katcha","Kontagora","Lapai","Lavun","Magama","Mariga","Mashegu","Mokwa","Muya","Pailoro","Rafi","Rijau","Shiroro","Suleja","Tafa","Wushishi"],
+  "Ogun":["Abeokuta North","Abeokuta South","Ado-Odo/Ota","Yewa North","Yewa South","Ewekoro","Ifo","Ijebu East","Ijebu North","Ijebu North East","Ijebu Ode","Ikenne","Imeko-Afon","Ipokia","Obafemi-Owode","Ogun Waterside","Odeda","Odogbolu","Remo North","Shagamu"],
+  "Ondo":["Akoko North East","Akoko North West","Akoko South Akure East","Akoko South West","Akure North","Akure South","Ese-Odo","Idanre","Ifedore","Ilaje","Ile-Oluji","Okeigbo","Irele","Odigbo","Okitipupa","Ondo East","Ondo West","Ose","Owo"],
+  "Osun":["Aiyedade","Aiyedire","Atakumosa East","Atakumosa West","Boluwaduro","Boripe","Ede North","Ede South","Egbedore","Ejigbo","Ife Central","Ife East","Ife North","Ife South","Ifedayo","Ifelodun","Ila","Ilesha East","Ilesha West","Irepodun","Irewole","Isokan","Iwo","Obokun","Odo-Otin","Ola-Oluwa","Olorunda","Oriade","Orolu","Osogbo"],
+  "Oyo":["Afijio","Akinyele","Atiba","Atisbo","Egbeda","Ibadan Central","Ibadan North","Ibadan North West","Ibadan South East","Ibadan South West","Ibarapa Central","Ibarapa East","Ibarapa North","Ido","Irepo","Iseyin","Itesiwaju","Iwajowa","Kajola","Lagelu Ogbomosho North","Ogbomosho South","Ogo Oluwa","Olorunsogo","Oluyole","Ona-Ara","Orelope","Ori Ire","Oyo East","Oyo West","Saki East","Saki West","Surulere"],
+  "Plateau":["Barikin Ladi","Bassa","Bokkos","Jos East","Jos North","Jos South","Kanam","Kanke","Langtang North","Langtang South","Mangu","Mikang","Pankshin","Qua'an Pan","Riyom","Shendam","Wase"],
+  "Rivers":["Abua/Odual","Ahooda East","Ahooda West","Akuku Toru","Andoni","Asari-Toru","Bonny","Degema","Emohua","Eleme","Etche","Gokana","Ikwerre","Khana","Obio/Akpor","Ogba/Egbema/Ndoni","Ogu/Bolo","Okrika","Omumma","Opobo/Nkoro","Oyigbo","Port-Harcourt","Tai"],
+  "Sokoto":["Binji","Bodinga","Dange-shnsi","Gada","Goronyo","Gudu","Gawabawa","Illela","Isa","Kware","Kebbe","Rabah","Sabon birni","Shagari","Silame","Sokoto North","Sokoto South","Tambuwal","Tqngaza","Tureta","Wamako","Wurno","Yabo"],
+  "Taraba":["Ardo-kola","Bali","Donga","Gashaka","Cassol","Ibi","Jalingo","Karin-Lamido","Kurmi","Lau","Sardauña","Takum","Ussa","Wukari","Yorro","Zing"],
+  "Yobe":["Bade","Bursari","Damaturu","Fika","Fune","Geidam","Gujba","Gulani","Jakusko","Karasuwa","Karawa","Machina","Nangere","Nguru Potiskum","Tarmua","Yunusari","Yusufari"],
+  "Zamfara":["Anka","Bakura","Birnin Magaji","Bukkuyum","Bungudu","Gummi","Gusau","Kaura","Namoda","Maradun","Maru","Shinkafi","Talata Mafara","Tsafe","Zurmi"]
 };
 
-// ============================================================
-// POPULATE STATE DROPDOWN
-// ============================================================
 function populateStates() {
   const stateSelect = document.getElementById('apply-state');
-  const states = Object.keys(NIGERIA_DATA).sort();
-  states.forEach(state => {
-    const option = document.createElement('option');
-    option.value = state;
-    option.textContent = state;
-    stateSelect.appendChild(option);
+  Object.keys(NIGERIA_DATA).sort().forEach(state => {
+    const opt = document.createElement('option');
+    opt.value = state; opt.textContent = state;
+    stateSelect.appendChild(opt);
   });
 }
-
-// ============================================================
-// DYNAMIC LGA DROPDOWN
-// ============================================================
 document.getElementById('apply-state').addEventListener('change', function() {
   const state = this.value;
   const lgaSelect = document.getElementById('apply-lga');
   lgaSelect.innerHTML = '<option value="">Select your LGA</option>';
   if (state && NIGERIA_DATA[state]) {
-    const lgas = NIGERIA_DATA[state].sort();
-    lgas.forEach(lga => {
-      const option = document.createElement('option');
-      option.value = lga;
-      option.textContent = lga;
-      lgaSelect.appendChild(option);
+    NIGERIA_DATA[state].sort().forEach(lga => {
+      const opt = document.createElement('option');
+      opt.value = lga; opt.textContent = lga;
+      lgaSelect.appendChild(opt);
     });
     lgaSelect.disabled = false;
-  } else {
-    lgaSelect.disabled = true;
-  }
+  } else { lgaSelect.disabled = true; }
 });
 
 // ========== APPLY ==========
@@ -688,30 +693,44 @@ document.getElementById('apply-form').addEventListener('submit', async (e) => {
     e.target.reset();
     document.getElementById('apply-lga').innerHTML = '<option value="">Select your LGA</option>';
     document.getElementById('apply-lga').disabled = true;
-  } catch(err){
-    showToast('Something went wrong: ' + err.message, 'error');
-  }
+  } catch(err){ showToast('Something went wrong: ' + err.message, 'error'); }
   setLoading(btn, false);
 });
 
-// ========== ACTIVATE ==========
+// ========== ACTIVATE (Username + Key) ==========
 let verifiedKey = null;
+let verifiedUsername = null;
 
 document.getElementById('key-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = document.getElementById('verify-key-btn');
   setLoading(btn, true);
   try {
+    const username = document.getElementById('activate-username').value.trim();
     const key = document.getElementById('activate-key').value.trim();
-    const { data, error } = await sb.rpc('check_activation_key', { key_input: key });
-    if(error || !data) throw new Error('Invalid or expired activation key.');
+    if (!username || !key) throw new Error('Please enter both username and key.');
+
+    // Check if key is valid AND linked to this username
+    const { data: keyData, error: keyError } = await sb
+      .from('activation_keys')
+      .select('*, applications(applicant_name)')
+      .eq('key', key.toUpperCase())
+      .eq('used', false)
+      .single();
+
+    if (keyError || !keyData) throw new Error('Invalid or expired activation key.');
+    if (keyData.applications?.applicant_name?.toLowerCase() !== username.toLowerCase()) {
+      throw new Error('This key belongs to a different username.');
+    }
+
     verifiedKey = key;
+    verifiedUsername = username;
     showToast('Key verified! Create your account below.', 'success');
     document.getElementById('key-form').style.display = 'none';
     document.getElementById('register-form').style.display = 'block';
-  } catch(err){
-    showToast(err.message, 'error');
-  }
+    document.getElementById('reg-username').value = username;
+    document.getElementById('reg-username').disabled = true;
+  } catch(err){ showToast(err.message, 'error'); }
   setLoading(btn, false);
 });
 
@@ -723,23 +742,18 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     const username = document.getElementById('reg-username').value.trim();
     const email = document.getElementById('reg-email').value.trim();
     const password = document.getElementById('reg-password').value;
-
     const { data: signUpData, error: signUpError } = await sb.auth.signUp({ email, password });
     if(signUpError) throw signUpError;
     const userId = signUpData.user?.id;
     if(!userId) throw new Error('Account created but no session returned.');
-
     const { data: consumed, error: consumeError } = await sb.rpc('consume_activation_key', {
       key_input: verifiedKey, new_user_id: userId, new_username: username
     });
     if(consumeError || !consumed) throw new Error('Activation failed. Contact an officer.');
-
     showToast('Account activated! Redirecting...', 'success');
     currentSession = signUpData.session;
     setTimeout(() => { location.hash = '#dashboard'; }, 1200);
-  } catch(err){
-    showToast(err.message, 'error');
-  }
+  } catch(err){ showToast(err.message, 'error'); }
   setLoading(btn, false);
 });
 
@@ -759,9 +773,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     renderNav();
     location.hash = '#dashboard';
     showToast('Logged in!', 'success');
-  } catch(err){
-    showToast('Login failed: ' + err.message, 'error');
-  }
+  } catch(err){ showToast('Login failed: ' + err.message, 'error'); }
   setLoading(btn, false);
 });
 
@@ -790,15 +802,13 @@ async function loadDashboard(){
     rows.innerHTML = `
       <div class="profile-row"><span class="k">Member ID</span><span class="v">${profile.member_id}</span></div>
       <div class="profile-row"><span class="k">Username</span><span class="v">${profile.username}</span></div>
+      <div class="profile-row"><span class="k">Nickname</span><span class="v">${profile.nickname || '—'}</span></div>
       <div class="profile-row"><span class="k">Rank</span><span class="v">${profile.rank}</span></div>
       <div class="profile-row"><span class="k">Role</span><span class="badge ${badgeClass}">${profile.role}</span></div>
       <div class="profile-row"><span class="k">Status</span><span class="v">${profile.status}</span></div>
       <div class="profile-row"><span class="k">Joined</span><span class="v">${profile.join_date}</span></div>
     `;
-  } else {
-    rows.innerHTML = `<div class="empty">Profile not found.</div>`;
-  }
-
+  } else { rows.innerHTML = `<div class="empty">Profile not found.</div>`; }
   const { data: announcements } = await sb.from('announcements').select('*').order('created_at', { ascending:false }).limit(5);
   const list = document.getElementById('announcements-list');
   if(announcements && announcements.length){
@@ -811,6 +821,118 @@ async function loadDashboard(){
   }
 }
 
+// ========== ROSTER (Member View) ==========
+async function loadRoster(){
+  const container = document.getElementById('roster-container');
+  container.innerHTML = '<div class="empty">Loading members...</div>';
+  const { data: members } = await sb.from('profiles').select('*').eq('status', 'active').order('username');
+  if(!members || !members.length){ container.innerHTML = '<div class="empty">No members found.</div>'; return; }
+  container.innerHTML = `<div class="roster-grid">${members.map(m => `
+    <div class="roster-card">
+      <div class="avatar">${m.avatar_url ? `<img src="${m.avatar_url}" alt="avatar">` : '🎯'}</div>
+      <div class="name">${m.nickname || m.username}</div>
+      <div class="rank">${m.rank || 'Recruit'} · <span class="badge ${m.role}">${m.role}</span></div>
+    </div>
+  `).join('')}</div>`;
+}
+
+// ========== EVENTS (Member View) ==========
+async function loadEvents(){
+  const container = document.getElementById('events-container');
+  container.innerHTML = '<div class="empty">Loading events...</div>';
+  const { data: events } = await sb.from('events').select('*').in('status', ['upcoming', 'live']).order('event_date');
+  if(!events || !events.length){ container.innerHTML = '<div class="empty">No upcoming events.</div>'; return; }
+  let html = '';
+  for (const ev of events) {
+    let userStatus = 'not-registered';
+    if (currentSession) {
+      const { data: att } = await sb.from('attendance').select('status').eq('event_id', ev.id).eq('member_id', currentSession.user.id).maybeSingle();
+      if (att) userStatus = att.status;
+    }
+    const isConfirmed = userStatus === 'confirmed' || userStatus === 'checked_in';
+    const isCheckedIn = userStatus === 'checked_in';
+    html += `
+      <div class="list-card" style="border-left:4px solid ${ev.type === 'war' ? '#e74c3c' : '#f1c40f'};">
+        <div class="info">
+          <h4>${ev.title} <span class="badge officer">${ev.type}</span></h4>
+          <p>${ev.event_date} at ${ev.event_time} · ${ev.status}<br>${ev.description || ''}</p>
+        </div>
+        <div class="actions">
+          ${!isConfirmed ? `<button class="btn btn-sm btn-approve confirm-event-btn" data-id="${ev.id}"><span class="spinner"></span><span class="btn-text">Confirm</span></button>` : 
+          `<span class="badge" style="background:#2ecc71;">${isCheckedIn ? '✅ Checked In' : 'Confirmed'}</span>`}
+          ${isConfirmed && !isCheckedIn ? `<button class="btn btn-sm btn-primary checkin-event-btn" data-id="${ev.id}"><span class="spinner"></span><span class="btn-text">Check In</span></button>` : ''}
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+  container.querySelectorAll('.confirm-event-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      setLoading(btn, true);
+      const { error } = await sb.from('attendance').insert({ event_id: id, member_id: currentSession.user.id, status: 'confirmed' });
+      setLoading(btn, false);
+      if (error) showToast(error.message, 'error');
+      else { showToast('Attendance confirmed!', 'success'); loadEvents(); }
+    });
+  });
+  container.querySelectorAll('.checkin-event-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      setLoading(btn, true);
+      const { error } = await sb.from('attendance').update({ status: 'checked_in', checked_in_at: new Date().toISOString() })
+        .eq('event_id', id).eq('member_id', currentSession.user.id);
+      setLoading(btn, false);
+      if (error) showToast(error.message, 'error');
+      else { showToast('Checked in!', 'success'); loadEvents(); }
+    });
+  });
+}
+
+// ========== PROFILE FORM ==========
+async function loadProfileForm(){
+  const p = currentProfile;
+  if(!p) return;
+  document.getElementById('prof-member-id').value = p.member_id || '';
+  document.getElementById('prof-username').value = p.username || '';
+  document.getElementById('prof-nickname').value = p.nickname || '';
+  document.getElementById('prof-uid').value = p.free_fire_uid || '';
+  document.getElementById('prof-avatar').value = p.avatar_url || '';
+  document.getElementById('prof-role').value = p.role || 'member';
+  document.getElementById('prof-rank').value = p.rank || 'Recruit';
+}
+
+document.getElementById('profile-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('profile-save-btn');
+  setLoading(btn, true);
+  try {
+    const { error } = await sb.from('profiles').update({
+      nickname: document.getElementById('prof-nickname').value.trim(),
+      free_fire_uid: document.getElementById('prof-uid').value.trim(),
+      avatar_url: document.getElementById('prof-avatar').value.trim()
+    }).eq('id', currentSession.user.id);
+    if(error) throw error;
+    showToast('Profile updated!', 'success');
+    await ensureProfile();
+    loadProfileForm();
+  } catch(err){ showToast(err.message, 'error'); }
+  setLoading(btn, false);
+});
+
+document.getElementById('password-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('password-btn');
+  setLoading(btn, true);
+  try {
+    const { error } = await sb.auth.updateUser({ password: document.getElementById('new-password').value });
+    if(error) throw error;
+    showToast('Password updated!', 'success');
+    document.getElementById('new-password').value = '';
+  } catch(err){ showToast(err.message, 'error'); }
+  setLoading(btn, false);
+});
+
 // ========== LANDING STATS ==========
 async function loadStats(){
   const { count: memberCount } = await sb.from('profiles').select('*', { count:'exact', head:true });
@@ -820,14 +942,13 @@ async function loadStats(){
 }
 
 // ============================================================
-// HQ PORTAL (Officer / Admin)
+// HQ PORTAL
 // ============================================================
 let hqInitialized = false;
 
 function initHQ(){
   const isAdmin = currentProfile && currentProfile.role === 'admin';
-  document.getElementById('hq-role-note').textContent =
-    isAdmin ? 'Admin access — full control panel.' : 'Officer access — events, attendance, and applications view.';
+  document.getElementById('hq-role-note').textContent = isAdmin ? 'Admin access — full control panel.' : 'Officer access — events, applications, and keys.';
 
   document.querySelectorAll('.hq-tab').forEach(btn => {
     if(btn.dataset.tab === 'members' || btn.dataset.tab === 'keys'){
@@ -844,7 +965,6 @@ function initHQ(){
     document.getElementById('hq-generate-key-btn').addEventListener('click', generateRawKey);
     hqInitialized = true;
   }
-
   switchHQTab('applications');
 }
 
@@ -856,18 +976,16 @@ function switchHQTab(tab){
   if(tab === 'events') loadEventsHQ();
   if(tab === 'announcements') loadAnnouncementsHQ();
   if(tab === 'keys') loadKeys();
+  if(tab === 'stats') loadStatsHQ();
 }
 
-// ========== APPLICATIONS (with new fields) ==========
+// ========== APPLICATIONS (Officer + Admin can approve) ==========
 async function loadApplications(){
   const list = document.getElementById('applications-list');
   list.innerHTML = `<div class="empty">Loading...</div>`;
-  const { data: apps, error } = await sb.from('applications').select('*').order('created_at', { ascending:false }).limit(30);
-  if(error || !apps || !apps.length){
-    list.innerHTML = `<div class="empty">No applications yet.</div>`;
-    return;
-  }
-  const isAdmin = currentProfile.role === 'admin';
+  const { data: apps } = await sb.from('applications').select('*').order('created_at', { ascending:false }).limit(30);
+  if(!apps || !apps.length){ list.innerHTML = `<div class="empty">No applications yet.</div>`; return; }
+  const isStaff = currentProfile && (currentProfile.role === 'admin' || currentProfile.role === 'officer');
   list.innerHTML = apps.map(a => `
     <div class="list-card">
       <div class="info">
@@ -877,24 +995,15 @@ async function loadApplications(){
         <p><strong>Account Age:</strong> ${a.account_age || '—'} · <strong>Play Style:</strong> ${a.play_style || '—'} · <strong>Role:</strong> ${a.playing_role || '—'}</p>
         ${a.experience ? `<p><strong>Experience:</strong> ${a.experience}</p>` : ''}
       </div>
-      ${isAdmin && a.status === 'pending' ? `
+      ${isStaff && a.status === 'pending' ? `
       <div class="actions">
-        <button class="btn btn-sm btn-approve" data-id="${a.id}" data-action="approve">
-          <span class="spinner"></span><span class="btn-text">Approve</span>
-        </button>
-        <button class="btn btn-sm btn-reject" data-id="${a.id}" data-action="reject">
-          <span class="spinner"></span><span class="btn-text">Reject</span>
-        </button>
+        <button class="btn btn-sm btn-approve" data-id="${a.id}" data-action="approve"><span class="spinner"></span><span class="btn-text">Approve</span></button>
+        <button class="btn btn-sm btn-reject" data-id="${a.id}" data-action="reject"><span class="spinner"></span><span class="btn-text">Reject</span></button>
       </div>` : ''}
     </div>
   `).join('');
-
-  list.querySelectorAll('[data-action="approve"]').forEach(btn => {
-    btn.addEventListener('click', () => handleApplication(btn.dataset.id, 'approve', btn));
-  });
-  list.querySelectorAll('[data-action="reject"]').forEach(btn => {
-    btn.addEventListener('click', () => handleApplication(btn.dataset.id, 'reject', btn));
-  });
+  list.querySelectorAll('[data-action="approve"]').forEach(btn => btn.addEventListener('click', () => handleApplication(btn.dataset.id, 'approve', btn)));
+  list.querySelectorAll('[data-action="reject"]').forEach(btn => btn.addEventListener('click', () => handleApplication(btn.dataset.id, 'reject', btn)));
 }
 
 async function handleApplication(appId, action, btn){
@@ -902,8 +1011,7 @@ async function handleApplication(appId, action, btn){
   try {
     const { data: { user } } = await sb.auth.getUser();
     if(action === 'approve'){
-      const { data: keyRow, error: keyErr } = await sb.from('activation_keys')
-        .insert({ application_id: appId }).select().single();
+      const { data: keyRow, error: keyErr } = await sb.from('activation_keys').insert({ application_id: appId }).select().single();
       if(keyErr) throw new Error('Failed to generate key: ' + keyErr.message);
       await sb.from('applications').update({ status: 'approved', reviewed_by: user.id }).eq('id', appId);
       showToast(`Approved! Key: ${keyRow.key}`, 'success');
@@ -912,62 +1020,82 @@ async function handleApplication(appId, action, btn){
       showToast('Rejected.', 'warning');
     }
     loadApplications();
-  } catch(err){
-    showToast(err.message, 'error');
-  }
+  } catch(err){ showToast(err.message, 'error'); }
   setLoading(btn, false);
 }
 
-// ========== MEMBERS ==========
+// ========== MEMBERS (Admin only) ==========
 async function loadMembers(){
   const tbody = document.getElementById('members-tbody');
-  tbody.innerHTML = `<tr><td colspan="5" class="empty">Loading...</td></tr>`;
-  const { data: members, error } = await sb.from('profiles').select('*').order('join_date', { ascending:true });
-  if(error || !members || !members.length){
-    tbody.innerHTML = `<tr><td colspan="5" class="empty">No members found.</td></tr>`;
-    return;
-  }
+  tbody.innerHTML = `<tr><td colspan="6" class="empty">Loading...</td></tr>`;
+  const { data: members } = await sb.from('profiles').select('*').order('join_date', { ascending:true });
+  if(!members || !members.length){ tbody.innerHTML = `<tr><td colspan="6" class="empty">No members found.</td></tr>`; return; }
+  const isAdmin = currentProfile?.role === 'admin';
   tbody.innerHTML = members.map(m => `
     <tr>
       <td>${m.username}</td>
       <td class="mono">${m.member_id}</td>
       <td>${m.rank}</td>
       <td>
-        <select data-member="${m.id}" data-field="role" class="member-update-select">
+        ${isAdmin ? `<select data-member="${m.id}" data-field="role" class="member-update-select">
           <option value="member" ${m.role==='member'?'selected':''}>Member</option>
           <option value="officer" ${m.role==='officer'?'selected':''}>Officer</option>
           <option value="admin" ${m.role==='admin'?'selected':''}>Admin</option>
-        </select>
+        </select>` : `<span class="badge ${m.role}">${m.role}</span>`}
       </td>
       <td>
-        <select data-member="${m.id}" data-field="status" class="member-update-select">
+        ${isAdmin ? `<select data-member="${m.id}" data-field="status" class="member-update-select">
           <option value="active" ${m.status==='active'?'selected':''}>Active</option>
           <option value="inactive" ${m.status==='inactive'?'selected':''}>Inactive</option>
           <option value="suspended" ${m.status==='suspended'?'selected':''}>Suspended</option>
-        </select>
+        </select>` : `<span class="badge">${m.status}</span>`}
+      </td>
+      <td>
+        ${isAdmin && m.id !== currentSession?.user?.id ? `
+          <button class="btn btn-sm btn-danger delete-member-btn" data-id="${m.id}" data-username="${m.username}"><span class="spinner"></span><span class="btn-text">Delete</span></button>
+        ` : (m.id === currentSession?.user?.id ? 'You' : '')}
       </td>
     </tr>
   `).join('');
 
-  document.querySelectorAll('.member-update-select').forEach(sel => {
-    sel.addEventListener('change', async function(){
-      const memberId = this.dataset.member;
-      const field = this.dataset.field;
-      const value = this.value;
-      this.disabled = true;
-      try {
-        const { error } = await sb.from('profiles').update({ [field]: value }).eq('id', memberId);
-        if(error) throw error;
-        showToast('Member updated.', 'success');
-      } catch(err){
-        showToast('Update failed: ' + err.message, 'error');
-      }
-      this.disabled = false;
+  if(isAdmin){
+    document.querySelectorAll('.member-update-select').forEach(sel => {
+      sel.addEventListener('change', async function(){
+        const memberId = this.dataset.member;
+        const field = this.dataset.field;
+        const value = this.value;
+        this.disabled = true;
+        try {
+          const { error } = await sb.from('profiles').update({ [field]: value }).eq('id', memberId);
+          if(error) throw error;
+          showToast('Member updated.', 'success');
+        } catch(err){ showToast('Update failed: ' + err.message, 'error'); }
+        this.disabled = false;
+      });
     });
-  });
+    document.querySelectorAll('.delete-member-btn').forEach(btn => {
+      btn.addEventListener('click', async function(){
+        const id = this.dataset.id;
+        const username = this.dataset.username;
+        if(!confirm(`⚠️ Permanently delete member "${username}"? This cannot be undone.`)) return;
+        setLoading(this, true);
+        try {
+          // Delete from profiles
+          const { error: profileError } = await sb.from('profiles').delete().eq('id', id);
+          if(profileError) throw profileError;
+          // Delete auth user (via admin API)
+          const { error: authError } = await sb.auth.admin.deleteUser(id);
+          if(authError) throw authError;
+          showToast(`Member "${username}" permanently deleted.`, 'success');
+          loadMembers();
+        } catch(err){ showToast('Delete failed: ' + err.message, 'error'); }
+        setLoading(this, false);
+      });
+    });
+  }
 }
 
-// ========== EVENTS ==========
+// ========== EVENTS HQ (Create + Edit + Delete) ==========
 async function createEvent(e){
   e.preventDefault();
   const btn = document.getElementById('hq-event-btn');
@@ -986,31 +1114,114 @@ async function createEvent(e){
     showToast('Event created.', 'success');
     e.target.reset();
     loadEventsHQ();
-  } catch(err){
-    showToast(err.message, 'error');
-  }
+  } catch(err){ showToast(err.message, 'error'); }
   setLoading(btn, false);
 }
+
+let editingEventId = null;
 
 async function loadEventsHQ(){
   const list = document.getElementById('events-list');
   list.innerHTML = `<div class="empty">Loading...</div>`;
   const { data: events } = await sb.from('events').select('*').order('event_date', { ascending:false }).limit(20);
-  if(!events || !events.length){
-    list.innerHTML = `<div class="empty">No events yet.</div>`;
-    return;
-  }
+  if(!events || !events.length){ list.innerHTML = `<div class="empty">No events yet.</div>`; return; }
+  const isStaff = currentProfile && (currentProfile.role === 'admin' || currentProfile.role === 'officer');
   list.innerHTML = events.map(ev => `
-    <div class="list-card">
-      <div class="info">
-        <h4>${ev.title} <span class="badge officer">${ev.type}</span></h4>
-        <p>${ev.event_date} at ${ev.event_time} · ${ev.status}<br>${ev.description || ''}</p>
+    <div class="list-card" id="event-${ev.id}">
+      <div class="info" style="flex:1;">
+        ${editingEventId === ev.id ? `
+          <div class="field"><label>Title</label><input type="text" id="edit-ev-title" value="${ev.title}" required></div>
+          <div class="field"><label>Type</label>
+            <select id="edit-ev-type">
+              <option value="war" ${ev.type==='war'?'selected':''}>War</option>
+              <option value="scrim" ${ev.type==='scrim'?'selected':''}>Scrim</option>
+              <option value="tournament" ${ev.type==='tournament'?'selected':''}>Tournament</option>
+              <option value="meeting" ${ev.type==='meeting'?'selected':''}>Meeting</option>
+              <option value="training" ${ev.type==='training'?'selected':''}>Training</option>
+            </select>
+          </div>
+          <div class="field"><label>Date</label><input type="date" id="edit-ev-date" value="${ev.event_date}" required></div>
+          <div class="field"><label>Time</label><input type="time" id="edit-ev-time" value="${ev.event_time}" required></div>
+          <div class="field"><label>Status</label>
+            <select id="edit-ev-status">
+              <option value="upcoming" ${ev.status==='upcoming'?'selected':''}>Upcoming</option>
+              <option value="live" ${ev.status==='live'?'selected':''}>Live</option>
+              <option value="completed" ${ev.status==='completed'?'selected':''}>Completed</option>
+              <option value="cancelled" ${ev.status==='cancelled'?'selected':''}>Cancelled</option>
+            </select>
+          </div>
+          <div class="field"><label>Description</label><textarea id="edit-ev-desc">${ev.description || ''}</textarea></div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button class="btn btn-sm btn-approve save-event-edit" data-id="${ev.id}"><span class="spinner"></span><span class="btn-text">Save</span></button>
+            <button class="btn btn-sm btn-reject cancel-event-edit" data-id="${ev.id}"><span class="spinner"></span><span class="btn-text">Cancel</span></button>
+          </div>
+        ` : `
+          <h4>${ev.title} <span class="badge officer">${ev.type}</span> <span class="badge">${ev.status}</span></h4>
+          <p>${ev.event_date} at ${ev.event_time}<br>${ev.description || ''}</p>
+        `}
       </div>
+      ${isStaff && editingEventId !== ev.id ? `
+      <div class="actions">
+        <button class="btn btn-sm btn-primary edit-event-btn" data-id="${ev.id}"><span class="spinner"></span><span class="btn-text">Edit</span></button>
+        <button class="btn btn-sm btn-danger delete-event-btn" data-id="${ev.id}"><span class="spinner"></span><span class="btn-text">Delete</span></button>
+      </div>` : ''}
     </div>
   `).join('');
+
+  // Edit buttons
+  list.querySelectorAll('.edit-event-btn').forEach(btn => {
+    btn.addEventListener('click', function(){
+      editingEventId = this.dataset.id;
+      loadEventsHQ();
+    });
+  });
+  // Save edit
+  list.querySelectorAll('.save-event-edit').forEach(btn => {
+    btn.addEventListener('click', async function(){
+      const id = this.dataset.id;
+      setLoading(this, true);
+      try {
+        const { error } = await sb.from('events').update({
+          title: document.getElementById('edit-ev-title').value.trim(),
+          type: document.getElementById('edit-ev-type').value,
+          event_date: document.getElementById('edit-ev-date').value,
+          event_time: document.getElementById('edit-ev-time').value,
+          status: document.getElementById('edit-ev-status').value,
+          description: document.getElementById('edit-ev-desc').value.trim()
+        }).eq('id', id);
+        if(error) throw error;
+        showToast('Event updated.', 'success');
+        editingEventId = null;
+        loadEventsHQ();
+      } catch(err){ showToast(err.message, 'error'); }
+      setLoading(this, false);
+    });
+  });
+  // Cancel edit
+  list.querySelectorAll('.cancel-event-edit').forEach(btn => {
+    btn.addEventListener('click', function(){
+      editingEventId = null;
+      loadEventsHQ();
+    });
+  });
+  // Delete event
+  list.querySelectorAll('.delete-event-btn').forEach(btn => {
+    btn.addEventListener('click', async function(){
+      if(!confirm('Delete this event?')) return;
+      setLoading(this, true);
+      const id = this.dataset.id;
+      try {
+        const { error } = await sb.from('events').delete().eq('id', id);
+        if(error) throw error;
+        showToast('Event deleted.', 'warning');
+        loadEventsHQ();
+      } catch(err){ showToast(err.message, 'error'); }
+      setLoading(this, false);
+    });
+  });
 }
 
-// ========== ANNOUNCEMENTS ==========
+// ========== ANNOUNCEMENTS HQ ==========
 async function postAnnouncement(e){
   e.preventDefault();
   const btn = document.getElementById('hq-announce-btn');
@@ -1026,9 +1237,7 @@ async function postAnnouncement(e){
     showToast('Announcement posted.', 'success');
     e.target.reset();
     loadAnnouncementsHQ();
-  } catch(err){
-    showToast(err.message, 'error');
-  }
+  } catch(err){ showToast(err.message, 'error'); }
   setLoading(btn, false);
 }
 
@@ -1036,10 +1245,7 @@ async function loadAnnouncementsHQ(){
   const list = document.getElementById('hq-announcements-list');
   list.innerHTML = `<div class="empty">Loading...</div>`;
   const { data: anns } = await sb.from('announcements').select('*').order('created_at', { ascending:false }).limit(20);
-  if(!anns || !anns.length){
-    list.innerHTML = `<div class="empty">No announcements yet.</div>`;
-    return;
-  }
+  if(!anns || !anns.length){ list.innerHTML = `<div class="empty">No announcements yet.</div>`; return; }
   list.innerHTML = anns.map(a => `
     <div class="list-card">
       <div class="info"><h4>${a.title}</h4><p>${a.content}</p></div>
@@ -1047,7 +1253,7 @@ async function loadAnnouncementsHQ(){
   `).join('');
 }
 
-// ========== ACTIVATION KEYS ==========
+// ========== ACTIVATION KEYS HQ ==========
 async function generateRawKey(){
   const btn = document.getElementById('hq-generate-key-btn');
   setLoading(btn, true);
@@ -1056,9 +1262,7 @@ async function generateRawKey(){
     if(error) throw error;
     showToast(`Generated: ${data.key}`, 'success');
     loadKeys();
-  } catch(err){
-    showToast(err.message, 'error');
-  }
+  } catch(err){ showToast(err.message, 'error'); }
   setLoading(btn, false);
 }
 
@@ -1066,10 +1270,7 @@ async function loadKeys(){
   const list = document.getElementById('keys-list');
   list.innerHTML = `<div class="empty">Loading...</div>`;
   const { data: keys } = await sb.from('activation_keys').select('*').order('created_at', { ascending:false }).limit(30);
-  if(!keys || !keys.length){
-    list.innerHTML = `<div class="empty">No keys generated yet.</div>`;
-    return;
-  }
+  if(!keys || !keys.length){ list.innerHTML = `<div class="empty">No keys generated yet.</div>`; return; }
   list.innerHTML = keys.map(k => `
     <div class="list-card">
       <div class="info">
@@ -1080,18 +1281,51 @@ async function loadKeys(){
   `).join('');
 }
 
+// ========== STATISTICS HQ ==========
+async function loadStatsHQ(){
+  try {
+    const { count: totalMembers } = await sb.from('profiles').select('*', { count:'exact', head:true });
+    const { count: activeMembers } = await sb.from('profiles').select('*', { count:'exact', head:true }).eq('status', 'active');
+    const { count: totalEvents } = await sb.from('events').select('*', { count:'exact', head:true });
+    const { count: memberCount } = await sb.from('profiles').select('*', { count:'exact', head:true }).eq('role', 'member');
+    const { count: officerCount } = await sb.from('profiles').select('*', { count:'exact', head:true }).eq('role', 'officer');
+    const { count: adminCount } = await sb.from('profiles').select('*', { count:'exact', head:true }).eq('role', 'admin');
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const { count: newMembers } = await sb.from('profiles').select('*', { count:'exact', head:true }).gte('join_date', thirtyDaysAgo.toISOString().split('T')[0]);
+
+    // Attendance rate: average confirmed per event
+    let attendanceRate = 0;
+    if (totalEvents > 0) {
+      const { data: attData } = await sb.from('attendance').select('event_id', { count:'exact' });
+      if (attData && attData.length > 0) {
+        const eventCounts = {};
+        attData.forEach(a => { eventCounts[a.event_id] = (eventCounts[a.event_id] || 0) + 1; });
+        const total = Object.values(eventCounts).reduce((a,b) => a+b, 0);
+        attendanceRate = Math.round((total / Object.keys(eventCounts).length) * 10) / 10;
+      }
+    }
+
+    document.getElementById('stat-total-members').textContent = totalMembers || 0;
+    document.getElementById('stat-active-members').textContent = activeMembers || 0;
+    document.getElementById('stat-total-events').textContent = totalEvents || 0;
+    document.getElementById('stat-attendance-rate').textContent = attendanceRate > 0 ? attendanceRate + '/event' : '—';
+    document.getElementById('stat-members-role').textContent = `${memberCount||0} / ${officerCount||0} / ${adminCount||0}`;
+    document.getElementById('stat-new-members').textContent = newMembers || 0;
+  } catch(e){ /* ignore */ }
+}
+
 // ========== INIT ==========
 (async function init(){
-  // Populate states dropdown
   populateStates();
-
-  // Check session
   const { data: { session } } = await sb.auth.getSession();
   currentSession = session;
   if(currentSession) await ensureProfile();
   renderNav();
   loadStats();
   route();
+  // Set today's date for event form
+  document.getElementById('ev-date').value = new Date().toISOString().split('T')[0];
 })();
 </script>
 </body>
