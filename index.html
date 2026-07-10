@@ -496,11 +496,21 @@ document.getElementById('key-form').addEventListener('submit', async (e) => {
   const msg = document.getElementById('activate-msg');
   msg.className = 'msg'; msg.textContent = '';
   const key = document.getElementById('activate-key').value.trim();
-  const { data, error } = await sb.rpc('check_activation_key', { key_input: key });
-  if(error || !data){
+  
+  // FIXED: Direct database check instead of RPC
+  const { data: keyData, error: keyError } = await sb
+    .from('activation_keys')
+    .select('key')
+    .eq('key', key.toUpperCase())
+    .eq('used', false)
+    .gt('expires_at', new Date().toISOString())
+    .maybeSingle();
+
+  if (keyError || !keyData) {
     msg.classList.add('show','error'); msg.textContent = 'Invalid or expired activation key.';
     return;
   }
+  
   verifiedKey = key;
   msg.classList.add('show','ok'); msg.textContent = 'Key verified. Create your account below.';
   document.getElementById('key-form').style.display = 'none';
